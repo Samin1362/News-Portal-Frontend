@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Deligo design tokens — see frontend_plan.md "Design Theme".
+   Source: Claude Design wireframe bundle (news-portal-deligo).
+   ============================================================ */
+
+@theme {
+  --color-ink: #1a1a1a;
+  --color-paper: #ffffff;
+  --color-paper-2: #f4f4f3;
+  --color-muted: #8a8378;
+  --color-accent: #c8321b;
+  --color-accent-2: #2d6b3f;
+
+  --font-serif: var(--font-serif-google), "Times New Roman", serif;
+  --font-sans: var(--font-sans-google), system-ui, sans-serif;
+  --font-hand: var(--font-hand-google), "Patrick Hand", cursive;
+
+  --radius-sm: 2px;
+  --radius-md: 4px;
+}
+
+:root {
+  /* Density token — wired now, exposed as a user toggle in Phase 9. */
+  --pad: 14px;
+}
+
+[data-density="compact"] { --pad: 10px; }
+[data-density="comfy"]   { --pad: 18px; }
+
+html,
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Headlines, brand wordmark, article body all default to the serif. */
+h1, h2, h3, h4, h5, h6, .serif {
+  font-family: var(--font-serif);
+}
+
+.font-hand {
+  font-family: var(--font-hand);
+}
+
+/* "uline" — the skewed editorial-red underline used behind section titles. */
+.uline {
+  position: relative;
+  display: inline-block;
+}
+.uline::after {
+  content: "";
+  position: absolute;
+  inset: auto -2px -4px -2px;
+  height: 6px;
+  background: var(--color-accent);
+  opacity: 0.35;
+  border-radius: 4px;
+  transform: skewX(-8deg);
+}
+
+/* Breaking ticker marquee — used by BreakingTicker. */
+@keyframes ticker-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.ticker-track {
+  display: inline-flex;
+  gap: 28px;
+  white-space: nowrap;
+  animation: ticker-scroll 32s linear infinite;
+}
