@@ -1,7 +1,8 @@
+"use client";
+
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { Pill } from "@/components/ui/Pill";
-
-export const metadata = { title: "Dashboard" };
+import { useAuth } from "@/lib/auth/AuthProvider";
 
 const STATS = [
   { label: "Drafts", value: 0, hint: "—" },
@@ -11,13 +12,17 @@ const STATS = [
 ];
 
 /**
- * Phase 1: dashboard overview shell. Phase 5 populates the stats from
- * `GET /api/v1/articles/me?status=...` and renders the recent activity feed.
+ * Phase 2: signed-in landing page. Stats remain placeholders until Phase 5
+ * wires `GET /articles/me?status=` per status.
  */
 export default function DashboardOverview() {
+  const { profile, role } = useAuth();
+
   return (
     <div className="max-w-[1080px] mx-auto">
-      <SectionTitle>Overview</SectionTitle>
+      <SectionTitle>
+        {profile ? `Hello, ${profile.displayName}` : "Overview"}
+      </SectionTitle>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {STATS.map((s) => (
@@ -41,20 +46,21 @@ export default function DashboardOverview() {
       <div className="mt-8 border-[1.5px] border-ink rounded-sm bg-paper p-5">
         <div className="flex items-center gap-2 mb-3">
           <h3 className="serif text-[16px] font-bold tracking-tight">
-            Phase 1 status
+            Phase 2 status
           </h3>
           <Pill variant="green" dot>
-            Theme locked
+            Auth live
           </Pill>
+          <Pill variant="default">Role: {role ?? "reader"}</Pill>
         </div>
         <ul className="space-y-1.5 font-sans text-[14px] text-ink">
-          <li>✔ Deligo design tokens wired into Tailwind v4</li>
-          <li>✔ Source Serif 4 / Inter / Kalam fonts loaded</li>
-          <li>✔ Public + auth + dashboard layout shells</li>
-          <li>✔ API client foundation (apiFetch + ApiError)</li>
-          <li>✔ Header pulls real categories from the Render backend</li>
+          <li>✔ Firebase email/password + Google sign-in</li>
+          <li>✔ Mongo profile sync via POST /api/v1/auth/sync</li>
+          <li>✔ Dashboard guard redirects unauthed → /login</li>
+          <li>✔ Role-aware sidebar nav + sign-out</li>
+          <li>✔ /profile read + edit (PATCH /api/v1/users/me)</li>
           <li className="text-muted">
-            Next: Phase 2 — Firebase auth + /auth/sync + RoleGuard.
+            Next: Phase 3 — public reader portal (homepage, category, article).
           </li>
         </ul>
       </div>

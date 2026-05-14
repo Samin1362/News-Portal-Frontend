@@ -1,13 +1,64 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Btn } from "@/components/ui/Btn";
+import { Input } from "@/components/ui/Input";
+import { useAuth } from "@/lib/auth/AuthProvider";
+import { useToast } from "@/lib/ui/toast";
+import { authErrorMessage } from "@/lib/auth/errors";
 
-export const metadata = { title: "Sign in" };
+const schema = z.object({
+  email: z.string().email("Enter a valid email."),
+  password: z.string().min(1, "Password is required."),
+});
+type FormValues = z.infer<typeof schema>;
 
-/**
- * Phase 1: visual shell only — fields are inert. Phase 2 wires Firebase
- * email/password + Google OAuth and the call to `POST /api/v1/auth/sync`.
- */
 export default function LoginPage() {
+  const router = useRouter();
+  const search = useSearchParams();
+  const redirectTo = search.get("redirect") ?? "/dashboard";
+  const auth = useAuth();
+  const toast = useToast();
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<FormValues>({ resolver: zodResolver(schema) });
+
+  useEffect(() => {
+    if (!auth.loading && auth.firebaseUser && auth.profile) {
+      router.replace(redirectTo);
+    }
+  }, [auth.loading, auth.firebaseUser, auth.profile, router, redirectTo]);
+
+  async function onSubmit(values: FormValues) {
+    try {
+      await auth.signIn(values.email, values.password);
+      toast.success("Signed in.");
+    } catch (err) {
+      toast.error(authErrorMessage(err));
+    }
+  }
+
+  async function onGoogle() {
+    setGoogleLoading(true);
+    try {
+      await auth.signInWithGoogle();
+      toast.success("Signed in with Google.");
+    } catch (err) {
+      toast.error(authErrorMessage(err));
+    } finally {
+      setGoogleLoading(false);
+    }
+  }
+
   return (
     <div>
       <h1 className="serif text-[22px] font-extrabold tracking-tight">
@@ -17,27 +68,34 @@ export default function LoginPage() {
         Welcome back to the newsroom.
       </p>
 
-      <form className="mt-6 space-y-4" aria-disabled>
+      <form
+        className="mt-6 space-y-4"
+        onSubmit={handleSubmit(onSubmit)}
+        noValidate
+      >
         <label className="block">
           <span className="font-sans text-[12px] font-semibold text-ink">
             Email
           </span>
-          <input
+          <Input
             type="email"
+            autoComplete="email"
             placeholder="you@example.com"
-            disabled
-            className="mt-1 w-full border-[1.5px] border-ink rounded-sm bg-paper px-3 py-2 font-sans text-[14px] placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/30"
+            errorText={errors.email?.message}
+            {...register("email")}
           />
         </label>
+
         <label className="block">
           <span className="font-sans text-[12px] font-semibold text-ink">
             Password
           </span>
-          <input
+          <Input
             type="password"
+            autoComplete="current-password"
             placeholder="••••••••"
-            disabled
-            className="mt-1 w-full border-[1.5px] border-ink rounded-sm bg-paper px-3 py-2 font-sans text-[14px] placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/30"
+            errorText={errors.password?.message}
+            {...register("password")}
           />
           <div className="mt-1.5 text-right">
             <Link
@@ -49,8 +107,13 @@ export default function LoginPage() {
           </div>
         </label>
 
-        <Btn variant="primary" className="w-full" disabled>
-          Sign in
+        <Btn
+          type="submit"
+          variant="primary"
+          className="w-full"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Signing in…" : "Sign in"}
         </Btn>
 
         <div className="relative my-2 text-center">
@@ -60,8 +123,14 @@ export default function LoginPage() {
           </span>
         </div>
 
-        <Btn variant="default" className="w-full" disabled>
-          Continue with Google
+        <Btn
+          type="button"
+          variant="default"
+          className="w-full"
+          disabled={googleLoading}
+          onClick={onGoogle}
+        >
+          {googleLoading ? "Connecting…" : "Continue with Google"}
         </Btn>
       </form>
 
@@ -70,10 +139,6 @@ export default function LoginPage() {
         <Link href="/register" className="text-accent hover:underline">
           Create an account
         </Link>
-      </p>
-
-      <p className="mt-4 font-hand text-[10px] text-muted text-center">
-        Phase 1 — sign-in is wired in Phase 2.
       </p>
     </div>
   );

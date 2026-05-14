@@ -1,19 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   FileText,
   Gauge,
   Image as ImageIcon,
   ListChecks,
+  LogOut,
   MessageSquare,
   Megaphone,
   Settings,
   Tag,
+  User,
   Users,
 } from "lucide-react";
 import type { UserRole } from "@/lib/auth/types";
+import { useAuth } from "@/lib/auth/AuthProvider";
+import { useToast } from "@/lib/ui/toast";
 import { cn } from "@/lib/utils/cn";
 
 type Item = {
@@ -32,20 +36,26 @@ const NAV: Item[] = [
   { href: "/dashboard/admin/categories", label: "Categories", Icon: Tag, roles: ["admin"] },
   { href: "/dashboard/admin/comments", label: "Comments", Icon: MessageSquare, roles: ["editor", "admin"] },
   { href: "/dashboard/admin/ads", label: "Ads", Icon: Megaphone, roles: ["admin"] },
+  { href: "/profile", label: "Profile", Icon: User, roles: ["reader", "journalist", "editor", "admin"] },
   { href: "/dashboard/settings", label: "Settings", Icon: Settings, roles: ["reader", "journalist", "editor", "admin"] },
 ];
 
-interface SidebarProps {
-  /**
-   * Phase 1 ships a stub role so the full nav is visible during shell work.
-   * Phase 2 swaps this for `useAuth().role`, hiding items per role.
-   */
-  role?: UserRole;
-}
-
-export function Sidebar({ role = "admin" }: SidebarProps) {
+export function Sidebar({ role }: { role: UserRole }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { signOut, profile } = useAuth();
+  const toast = useToast();
   const items = NAV.filter((i) => i.roles.includes(role));
+
+  async function handleSignOut() {
+    try {
+      await signOut();
+      toast.info("Signed out.");
+      router.replace("/");
+    } catch {
+      toast.error("Could not sign out. Try again.");
+    }
+  }
 
   return (
     <aside className="hidden md:flex w-[220px] shrink-0 flex-col border-r-[1.5px] border-ink bg-paper-2">
@@ -83,8 +93,21 @@ export function Sidebar({ role = "admin" }: SidebarProps) {
         })}
       </nav>
 
-      <div className="px-3 py-3 border-t-[1.5px] border-ink font-hand text-[11px] text-muted">
-        Signed in as <span className="text-ink">{role}</span>
+      <div className="px-3 py-3 border-t-[1.5px] border-ink space-y-2">
+        <div className="font-hand text-[11px] text-muted leading-tight">
+          {profile?.displayName ? (
+            <span className="block text-ink truncate">{profile.displayName}</span>
+          ) : null}
+          Signed in as <span className="text-ink">{role}</span>
+        </div>
+        <button
+          type="button"
+          onClick={handleSignOut}
+          className="w-full flex items-center gap-2 px-2 py-1.5 border-[1.5px] border-ink rounded-sm font-hand text-[12px] text-ink hover:bg-paper transition-colors"
+        >
+          <LogOut size={12} aria-hidden />
+          Sign out
+        </button>
       </div>
     </aside>
   );
