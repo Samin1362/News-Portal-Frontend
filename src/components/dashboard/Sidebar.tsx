@@ -19,6 +19,7 @@ import type { UserRole } from "@/lib/auth/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useToast } from "@/lib/ui/toast";
 import { cn } from "@/lib/utils/cn";
+import { Logo } from "@/components/public/Logo";
 
 type Item = {
   href: string;
@@ -60,12 +61,7 @@ export function Sidebar({ role }: { role: UserRole }) {
   return (
     <aside className="hidden md:flex w-[220px] shrink-0 flex-col border-r-[1.5px] border-ink bg-paper-2">
       <div className="px-4 py-4 border-b-[1.5px] border-ink">
-        <Link href="/" className="flex items-baseline gap-1.5">
-          <span className="serif text-[22px] font-extrabold leading-none tracking-tight">
-            Deligo
-          </span>
-          <span className="font-hand text-[11px] text-accent">· daily</span>
-        </Link>
+        <Logo size="sm" withTagline={false} />
         <div className="font-hand text-[11px] text-muted mt-1">
           Newsroom dashboard
         </div>

@@ -78,7 +78,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       <div
         aria-live="polite"
         aria-atomic="true"
-        className="fixed top-4 right-4 z-[100] flex flex-col gap-2 max-w-[360px] pointer-events-none"
+        className="fixed top-4 right-4 z-100 flex flex-col gap-2 max-w-90 pointer-events-none"
       >
         {items.map((t) => (
           <button
