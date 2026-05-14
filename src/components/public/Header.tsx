@@ -1,9 +1,11 @@
 import Link from "next/link";
-import { Bell, Search } from "lucide-react";
+import { Bell } from "lucide-react";
 import { listCategories } from "@/lib/api/categories.api";
+import { getBreaking } from "@/lib/api/public.api";
 import { AdSlot } from "@/components/ui/AdSlot";
 import { BreakingTicker } from "./BreakingTicker";
 import { HeaderUserMenu } from "./HeaderUserMenu";
+import { SearchBox } from "./SearchBox";
 
 const STATIC_FALLBACK_NAV = [
   { slug: "latest", name: "Latest" },
@@ -30,16 +32,15 @@ function formatToday(): string {
  */
 export async function Header() {
   let nav = STATIC_FALLBACK_NAV;
-  try {
-    const categories = await listCategories();
-    if (categories.length > 0) {
-      nav = categories
-        .filter((c) => c.isActive)
-        .slice(0, 8)
-        .map((c) => ({ slug: c.slug, name: c.name }));
-    }
-  } catch {
-    // Backend cold-start or unreachable — fall back silently.
+  const [categoriesResult, breaking] = await Promise.all([
+    listCategories().catch(() => []),
+    getBreaking(10),
+  ]);
+  if (categoriesResult.length > 0) {
+    nav = categoriesResult
+      .filter((c) => c.isActive)
+      .slice(0, 8)
+      .map((c) => ({ slug: c.slug, name: c.name }));
   }
 
   return (
@@ -65,17 +66,7 @@ export async function Header() {
 
         <div className="flex-1" />
 
-        <label
-          className="hidden md:flex items-center gap-1.5 h-[30px] w-[220px] px-2 border-[1.5px] border-ink rounded-sm font-hand text-[12px] text-muted"
-          aria-label="Search news"
-        >
-          <Search size={14} aria-hidden />
-          <input
-            type="search"
-            placeholder="Search news…"
-            className="bg-transparent flex-1 outline-none font-hand text-[12px] text-ink placeholder:text-muted"
-          />
-        </label>
+        <SearchBox />
 
         <button
           type="button"
@@ -118,7 +109,7 @@ export async function Header() {
       </nav>
 
       {/* Breaking ticker */}
-      <BreakingTicker />
+      <BreakingTicker items={breaking} />
     </header>
   );
 }

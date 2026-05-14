@@ -1,108 +1,257 @@
+import Link from "next/link";
 import { SectionTitle } from "@/components/ui/SectionTitle";
-import { Pill } from "@/components/ui/Pill";
 import { AdSlot } from "@/components/ui/AdSlot";
+import { ArticleCard } from "@/components/public/ArticleCard";
+import { listCategories, type CategoryDTO } from "@/lib/api/categories.api";
+import { getHomepage } from "@/lib/api/public.api";
+import type { ArticleCardDTO } from "@/lib/types/article";
 
-/**
- * Phase 1: homepage shell. Renders the editorial layout (hero column +
- * sticky rail) using placeholder content so we can verify the theme.
- * Phase 3 fetches `GET /api/v1/public/homepage` and fills in real data
- * (breaking, top headlines, featured, latest, categories, videos, gallery).
- */
-export default function HomePage() {
+export const revalidate = 30;
+export const metadata = {
+  title: "Deligo — Independent daily news",
+  description:
+    "Top headlines, in-depth reporting, and breaking news across politics, business, sport, tech, and culture.",
+};
+
+function buildCategoryMap(items: CategoryDTO[]): Map<string, CategoryDTO> {
+  return new Map(items.map((c) => [c.id, c]));
+}
+
+function TrendingList({
+  items,
+  categoryById,
+}: {
+  items: ArticleCardDTO[];
+  categoryById: Map<string, CategoryDTO>;
+}) {
+  if (items.length === 0) return null;
+  return (
+    <ol className="space-y-3">
+      {items.map((a, idx) => (
+        <li key={a.id} className="flex gap-3">
+          <span className="serif text-[24px] font-extrabold text-accent leading-none w-6 shrink-0">
+            {idx + 1}
+          </span>
+          <div className="min-w-0">
+            <Link
+              href={`/article/${a.slug}`}
+              className="serif text-[14px] font-semibold leading-snug text-ink hover:text-accent block"
+            >
+              {a.headline}
+            </Link>
+            <div className="font-hand text-[11px] text-muted mt-0.5">
+              {categoryById.get(a.categoryId)?.name ?? "News"}
+            </div>
+          </div>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function EmptyState({ label }: { label: string }) {
+  return (
+    <div className="border-[1.5px] border-dashed border-ink/40 rounded-sm bg-paper-2 px-4 py-8 text-center">
+      <p className="font-hand text-[12px] text-muted">{label}</p>
+      <p className="mt-1 font-sans text-[13px] text-ink">
+        Once journalists publish content this section fills in automatically.
+      </p>
+    </div>
+  );
+}
+
+export default async function HomePage() {
+  const [homepage, categories] = await Promise.all([
+    getHomepage(),
+    listCategories().catch(() => []),
+  ]);
+  const categoryById = buildCategoryMap(categories);
+
+  if (!homepage) {
+    return (
+      <div className="max-w-[1280px] mx-auto px-6 py-12">
+        <SectionTitle>Top headline</SectionTitle>
+        <EmptyState label="The backend is warming up." />
+      </div>
+    );
+  }
+
+  const hero = homepage.topHeadlines[0] ?? homepage.latest[0] ?? null;
+  const subHeadlines = homepage.topHeadlines.slice(1, 5);
+  const featured = homepage.featured;
+  const latest = homepage.latest.slice(0, 12);
+
   return (
     <div className="max-w-[1280px] mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-8">
-      <div>
-        <SectionTitle more={{ href: "/", label: "All stories" }}>
-          Top headline
-        </SectionTitle>
-
-        <article className="border-[1.5px] border-ink rounded-sm overflow-hidden bg-paper">
-          <div
-            aria-hidden
-            className="w-full h-[320px] bg-paper-2"
-            style={{
-              backgroundImage:
-                "repeating-linear-gradient(135deg, transparent 0 8px, rgba(0,0,0,0.05) 8px 9px)",
-            }}
-          />
-          <div className="p-4 flex flex-col gap-2">
-            <div className="flex items-center gap-2">
-              <Pill variant="solid">Politics</Pill>
-              <Pill variant="red">Breaking</Pill>
+      <div className="min-w-0 space-y-10">
+        {/* Hero row */}
+        <section>
+          <SectionTitle more={{ href: "/", label: "All stories" }}>
+            Top headlines
+          </SectionTitle>
+          {hero ? (
+            <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
+              <ArticleCard
+                article={hero}
+                variant="large"
+                categoryById={categoryById}
+              />
+              <div className="space-y-4">
+                {subHeadlines.length === 0 ? (
+                  <EmptyState label="No supporting headlines yet." />
+                ) : (
+                  subHeadlines.map((a) => (
+                    <ArticleCard
+                      key={a.id}
+                      article={a}
+                      variant="small"
+                      categoryById={categoryById}
+                      showSummary={false}
+                    />
+                  ))
+                )}
+              </div>
             </div>
-            <h1 className="serif text-[28px] font-extrabold leading-tight tracking-tight">
-              Phase 1 wiring complete — backend connected, design tokens locked,
-              ready for Phase 3 to fetch real headlines.
-            </h1>
-            <p className="font-sans text-[14px] text-muted leading-relaxed">
-              The Deligo theme is live: Source Serif 4 headlines, Inter for UI
-              controls, Kalam for editorial flourishes. The Header is pulling
-              real category data from the Render-hosted backend. Phase 3 will
-              replace this placeholder with the live homepage composite.
-            </p>
-            <div className="flex items-center gap-2 font-hand text-[11px] text-muted mt-1">
-              <span>By Editorial</span>
-              <span>·</span>
-              <span>Today</span>
-            </div>
-          </div>
-        </article>
+          ) : (
+            <EmptyState label="No published articles yet." />
+          )}
+        </section>
 
-        <div className="mt-8">
-          <SectionTitle>Featured</SectionTitle>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[1, 2, 3, 4].map((i) => (
-              <article
-                key={i}
-                className="border-[1.5px] border-ink rounded-sm overflow-hidden bg-paper flex flex-col"
-              >
-                <div
-                  aria-hidden
-                  className="w-full h-[160px] bg-paper-2"
-                  style={{
-                    backgroundImage:
-                      "repeating-linear-gradient(135deg, transparent 0 8px, rgba(0,0,0,0.05) 8px 9px)",
-                  }}
+        {/* Featured */}
+        {featured.length > 0 ? (
+          <section>
+            <SectionTitle>Featured</SectionTitle>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {featured.map((a) => (
+                <ArticleCard
+                  key={a.id}
+                  article={a}
+                  variant="medium"
+                  categoryById={categoryById}
                 />
-                <div className="p-3 flex flex-col gap-2 flex-1">
-                  <div className="flex items-center gap-2">
-                    <Pill variant="solid">Tech</Pill>
-                    <Pill variant="green">Trending</Pill>
-                  </div>
-                  <h3 className="serif text-[17px] font-bold leading-snug tracking-tight">
-                    Featured story headline placeholder — Phase 3 fills this in
-                  </h3>
-                  <div className="flex items-center gap-2 font-hand text-[11px] text-muted mt-auto">
-                    <span>By Author</span>
-                    <span>·</span>
-                    <span>2h ago</span>
-                  </div>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        <AdSlot placement="home_inline" />
+
+        {/* Latest */}
+        <section>
+          <SectionTitle more={{ href: "/?view=latest", label: "More" }}>
+            Latest
+          </SectionTitle>
+          {latest.length === 0 ? (
+            <EmptyState label="No fresh stories yet." />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+              {latest.map((a) => (
+                <ArticleCard
+                  key={a.id}
+                  article={a}
+                  variant="small"
+                  categoryById={categoryById}
+                  showSummary={false}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Per-category blocks */}
+        {homepage.categories.map((block) => (
+          <section key={block.category.id}>
+            <SectionTitle
+              more={{ href: `/category/${block.category.slug}` }}
+            >
+              {block.category.name}
+            </SectionTitle>
+            {block.articles.length === 0 ? (
+              <EmptyState label={`No stories in ${block.category.name} yet.`} />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+                <div className="md:col-span-2">
+                  <ArticleCard
+                    article={block.articles[0]}
+                    variant="medium"
+                    categoryById={categoryById}
+                  />
                 </div>
-              </article>
-            ))}
-          </div>
-        </div>
+                <div className="md:col-span-2 space-y-3">
+                  {block.articles.slice(1, 4).map((a) => (
+                    <ArticleCard
+                      key={a.id}
+                      article={a}
+                      variant="small"
+                      categoryById={categoryById}
+                      showSummary={false}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </section>
+        ))}
+
+        {/* Video block */}
+        {homepage.videos.length > 0 ? (
+          <section>
+            <SectionTitle more={{ href: "/videos" }}>Watch</SectionTitle>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {homepage.videos.slice(0, 6).map((a) => (
+                <ArticleCard
+                  key={a.id}
+                  article={a}
+                  variant="medium"
+                  categoryById={categoryById}
+                  showSummary={false}
+                />
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        {/* Gallery teaser */}
+        {homepage.gallery.length > 0 ? (
+          <section>
+            <SectionTitle more={{ href: "/gallery" }}>In pictures</SectionTitle>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {homepage.gallery.slice(0, 8).map((a) => (
+                <ArticleCard
+                  key={a.id}
+                  article={a}
+                  variant="mini"
+                  categoryById={categoryById}
+                  showSummary={false}
+                />
+              ))}
+            </div>
+          </section>
+        ) : null}
       </div>
 
+      {/* Sticky sidebar */}
       <aside className="space-y-6">
         <AdSlot placement="home_sidebar" />
         <div>
           <SectionTitle>Trending</SectionTitle>
-          <ol className="space-y-3">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <li key={i} className="flex gap-3">
-                <span className="serif text-[24px] font-extrabold text-accent leading-none">
-                  {i}
-                </span>
-                <span className="serif text-[14px] font-semibold leading-snug">
-                  Placeholder trending headline number {i}, sourced from
-                  /public/trending in Phase 3.
-                </span>
-              </li>
-            ))}
-          </ol>
+          {homepage.trending.length === 0 ? (
+            <EmptyState label="Nothing trending yet." />
+          ) : (
+            <TrendingList
+              items={homepage.trending.slice(0, 8)}
+              categoryById={categoryById}
+            />
+          )}
         </div>
         <AdSlot placement="home_sidebar" />
+        <div className="font-hand text-[11px] text-muted pt-2 border-t border-black/10">
+          Updated{" "}
+          {new Date(homepage.generatedAt).toLocaleTimeString("en-GB", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </div>
       </aside>
     </div>
   );
