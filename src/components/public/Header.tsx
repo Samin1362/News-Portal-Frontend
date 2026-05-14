@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { Bell, Search } from "lucide-react";
 import { listCategories } from "@/lib/api/categories.api";
-import { Btn } from "@/components/ui/Btn";
 import { AdSlot } from "@/components/ui/AdSlot";
 import { BreakingTicker } from "./BreakingTicker";
+import { HeaderUserMenu } from "./HeaderUserMenu";
 
 const STATIC_FALLBACK_NAV = [
   { slug: "latest", name: "Latest" },
@@ -85,12 +85,7 @@ export async function Header() {
           <Bell size={18} aria-hidden />
         </button>
 
-        <Btn variant="ghost" size="sm">
-          <Link href="/login">Sign in</Link>
-        </Btn>
-        <Btn variant="solid" size="sm">
-          <Link href="/register">Subscribe</Link>
-        </Btn>
+        <HeaderUserMenu />
       </div>
 
       {/* Category nav row */}
