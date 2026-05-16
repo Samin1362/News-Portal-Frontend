@@ -7,6 +7,7 @@ import { AdSlot } from "@/components/ui/AdSlot";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { ArticleCard } from "@/components/public/ArticleCard";
 import { ShareButtons } from "@/components/public/ShareButtons";
+import { CommentsSection } from "@/components/public/comments/CommentsSection";
 import { getArticleBySlug } from "@/lib/api/public.api";
 import { getArticleOg } from "@/lib/api/seo.api";
 import { listCategories } from "@/lib/api/categories.api";
@@ -268,15 +269,11 @@ export default async function ArticlePage({ params }: RouteParams) {
             ) : null}
 
             {/* Comments — Phase 4 */}
-            <section className="mt-10 border-[1.5px] border-dashed border-ink/40 rounded-sm bg-paper-2 px-4 py-6 text-center">
-              <p className="font-hand text-[12px] text-muted uppercase tracking-wider">
-                Discussion
-              </p>
-              <p className="mt-1 font-sans text-[14px] text-ink">
-                Comments arrive in <span className="text-accent">Phase 4</span>{" "}
-                (Engagement).
-              </p>
-            </section>
+            <CommentsSection
+              articleId={article.id}
+              isCommentsEnabled={article.isCommentsEnabled}
+              initialCount={article.commentCount}
+            />
           </div>
 
           <aside className="space-y-6">
