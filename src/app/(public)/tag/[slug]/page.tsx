@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { SectionTitle } from "@/components/ui/SectionTitle";
-import { AdSlot } from "@/components/ui/AdSlot";
 import { Pill } from "@/components/ui/Pill";
 import { ArticleCard } from "@/components/public/ArticleCard";
+import { SidebarAd } from "@/components/public/SidebarAd";
 import { Pagination } from "@/components/public/Pagination";
 import { getByTag } from "@/lib/api/public.api";
 import { listCategories } from "@/lib/api/categories.api";
@@ -93,7 +93,7 @@ export default async function TagPage({ params, searchParams }: RouteParams) {
         </div>
 
         <aside className="space-y-6">
-          <AdSlot placement="home_sidebar" />
+          <SidebarAd />
         </aside>
       </div>
     </div>

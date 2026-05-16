@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { SectionTitle } from "@/components/ui/SectionTitle";
-import { AdSlot } from "@/components/ui/AdSlot";
 import { ArticleCard } from "@/components/public/ArticleCard";
+import { SidebarAd } from "@/components/public/SidebarAd";
 import { Pagination } from "@/components/public/Pagination";
 import {
   getCategoryArticles,
@@ -124,7 +124,7 @@ export default async function CategoryPage({
         </div>
 
         <aside className="space-y-6">
-          <AdSlot placement="home_sidebar" />
+          <SidebarAd />
           <div>
             <SectionTitle>Trending</SectionTitle>
             <ol className="space-y-3">
