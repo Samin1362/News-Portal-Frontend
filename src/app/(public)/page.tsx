@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { SectionTitle } from "@/components/ui/SectionTitle";
-import { AdSlot } from "@/components/ui/AdSlot";
 import { ArticleCard } from "@/components/public/ArticleCard";
+import { SidebarAd } from "@/components/public/SidebarAd";
 import { listCategories, type CategoryDTO } from "@/lib/api/categories.api";
 import { getHomepage } from "@/lib/api/public.api";
 import type { ArticleCardDTO } from "@/lib/types/article";
@@ -134,8 +134,6 @@ export default async function HomePage() {
           </section>
         ) : null}
 
-        <AdSlot placement="home_inline" />
-
         {/* Latest */}
         <section>
           <SectionTitle more={{ href: "/?view=latest", label: "More" }}>
@@ -232,7 +230,7 @@ export default async function HomePage() {
 
       {/* Sticky sidebar */}
       <aside className="space-y-6">
-        <AdSlot placement="home_sidebar" />
+        <SidebarAd />
         <div>
           <SectionTitle>Trending</SectionTitle>
           {homepage.trending.length === 0 ? (
@@ -244,7 +242,7 @@ export default async function HomePage() {
             />
           )}
         </div>
-        <AdSlot placement="home_sidebar" />
+        <SidebarAd />
         <div className="font-hand text-[11px] text-muted pt-2 border-t border-black/10">
           Updated{" "}
           {new Date(homepage.generatedAt).toLocaleTimeString("en-GB", {

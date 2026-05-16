@@ -7,6 +7,7 @@ import { AdSlot } from "@/components/ui/AdSlot";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { ArticleCard } from "@/components/public/ArticleCard";
 import { ShareButtons } from "@/components/public/ShareButtons";
+import { SidebarAd } from "@/components/public/SidebarAd";
 import { CommentsSection } from "@/components/public/comments/CommentsSection";
 import { getArticleBySlug } from "@/lib/api/public.api";
 import { getArticleOg } from "@/lib/api/seo.api";
@@ -277,7 +278,7 @@ export default async function ArticlePage({ params }: RouteParams) {
           </div>
 
           <aside className="space-y-6">
-            <AdSlot placement="article_sidebar" />
+            <SidebarAd />
             {related.length > 0 ? (
               <div>
                 <SectionTitle>Related</SectionTitle>
@@ -294,7 +295,7 @@ export default async function ArticlePage({ params }: RouteParams) {
                 </div>
               </div>
             ) : null}
-            <AdSlot placement="article_sidebar" />
+            <SidebarAd />
           </aside>
         </div>
       </div>
