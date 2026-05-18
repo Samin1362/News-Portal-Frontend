@@ -145,3 +145,45 @@ h1, h2, h3, h4, h5, h6, .serif {
   white-space: nowrap;
   animation: ticker-scroll 32s linear infinite;
 }
+
+/* ----- Dashboard chrome animations (ported from editor portal) ----- */
+@keyframes dashIn {
+  to { stroke-dashoffset: 0; }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Staggered entry on dashboard content columns. */
+.stagger > * {
+  opacity: 0;
+  animation: fadeUp 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+.stagger > *:nth-child(1) { animation-delay: 0.04s; }
+.stagger > *:nth-child(2) { animation-delay: 0.10s; }
+.stagger > *:nth-child(3) { animation-delay: 0.16s; }
+.stagger > *:nth-child(4) { animation-delay: 0.22s; }
+.stagger > *:nth-child(5) { animation-delay: 0.28s; }
+.stagger > *:nth-child(6) { animation-delay: 0.34s; }
+.stagger > *:nth-child(7) { animation-delay: 0.40s; }
+.stagger > *:nth-child(8) { animation-delay: 0.46s; }
+
+/* Card hover lift — matches editor KPI / Card primitives. */
+.card-hov {
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.card-hov:hover {
+  transform: translateY(-2px);
+  box-shadow: 4px 4px 0 var(--color-ink);
+}
+
+/* Row hover used on list/queue items. */
+.row-hov {
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+.row-hov:hover {
+  transform: translateX(2px);
+  box-shadow: -4px 0 0 var(--color-accent);
+  border-color: var(--color-accent);
+}

@@ -122,7 +122,7 @@ export default function MyArticlesPage() {
   }
 
   return (
-    <div className="max-w-[1180px] mx-auto space-y-5">
+    <>
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <SectionTitle>My articles</SectionTitle>
         <Btn variant="primary">
@@ -276,6 +276,6 @@ export default function MyArticlesPage() {
           }}
         />
       ) : null}
-    </div>
+    </>
   );
 }
