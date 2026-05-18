@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { Btn } from "@/components/ui/Btn";
 import { useAuth } from "@/lib/auth/AuthProvider";
@@ -39,6 +40,11 @@ const PAGE_SIZE = 24;
  * Drawer-style modal for picking media from the journalist's library or
  * uploading a new asset. Supports single-pick (featured image) and
  * multi-pick (gallery / video list).
+ *
+ * Rendered through a Portal to `document.body` so it always anchors to the
+ * viewport — without this, the dashboard shell's stagger animation (which
+ * leaves a `translateY(0)` transform on the page wrapper) becomes the
+ * containing block and clips the drawer to the main column.
  */
 export function MediaPicker(props: Props) {
   const { open, onClose, type, articleId, mode, title } = props;
@@ -48,6 +54,11 @@ export function MediaPicker(props: Props) {
   const [items, setItems] = useState<MediaDTO[]>([]);
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -89,7 +100,7 @@ export function MediaPicker(props: Props) {
     return () => document.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  if (!open) return null;
+  if (!open || !mounted) return null;
 
   function handleClick(media: MediaDTO) {
     if (mode === "single") {
@@ -115,25 +126,32 @@ export function MediaPicker(props: Props) {
   const headerLabel =
     title ?? (mode === "single" ? "Pick an asset" : "Pick assets");
 
-  return (
-    <>
+  return createPortal(
+    <div
+      data-modal-open="true"
+      className="fixed inset-0 z-[60] flex justify-end"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="media-picker-title"
+    >
       <button
         type="button"
         aria-label="Close media picker"
         onClick={onClose}
-        className="fixed inset-0 bg-ink/40 z-40"
+        className="absolute inset-0 bg-ink/45 backdrop-blur-[2px]"
       />
       <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="media-picker-title"
-        className="fixed inset-y-0 right-0 z-50 w-full max-w-[640px] bg-paper border-l-[1.5px] border-ink flex flex-col"
+        className={cn(
+          "relative bg-paper border-l-[1.5px] border-ink flex flex-col h-full min-h-0",
+          "w-full sm:w-[min(640px,92vw)]",
+          "shadow-[-6px_0_0_var(--color-ink)]",
+        )}
       >
-        <header className="flex items-center justify-between gap-3 px-4 py-3 border-b-[1.5px] border-ink">
+        <header className="flex items-center justify-between gap-3 px-4 sm:px-5 py-3 border-b-[1.5px] border-ink bg-paper shrink-0">
           <div className="min-w-0">
             <h2
               id="media-picker-title"
-              className="serif text-[18px] font-extrabold tracking-tight"
+              className="serif text-[18px] font-extrabold tracking-tight truncate"
             >
               {headerLabel}
             </h2>
@@ -145,13 +163,13 @@ export function MediaPicker(props: Props) {
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="inline-flex items-center justify-center w-9 h-9 border-[1.5px] border-ink rounded-sm hover:bg-paper-2"
+            className="inline-flex items-center justify-center w-9 h-9 border-[1.5px] border-ink rounded-sm hover:bg-paper-2 shrink-0"
           >
             <X size={16} aria-hidden />
           </button>
         </header>
 
-        <div className="px-4 py-3 border-b-[1.5px] border-ink/30 bg-paper-2">
+        <div className="px-4 sm:px-5 py-3 border-b-[1.5px] border-ink/30 bg-paper-2 shrink-0">
           <CloudinaryUploader
             accept={type === "video" ? "video" : "image"}
             multiple={mode === "multi"}
@@ -173,7 +191,7 @@ export function MediaPicker(props: Props) {
           />
         </div>
 
-        <div className="flex-1 overflow-y-auto px-4 py-3">
+        <div className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-5 py-3">
           {loading ? (
             <p className="font-hand text-[12px] text-muted">Loading library…</p>
           ) : items.length === 0 ? (
@@ -199,8 +217,8 @@ export function MediaPicker(props: Props) {
         {mode === "multi" ? (
           <footer
             className={cn(
-              "flex items-center justify-between gap-3 px-4 py-3",
-              "border-t-[1.5px] border-ink bg-paper-2",
+              "flex items-center justify-between gap-3 px-4 sm:px-5 py-3",
+              "border-t-[1.5px] border-ink bg-paper-2 shrink-0",
             )}
           >
             <span className="font-hand text-[12px] text-muted">
@@ -223,6 +241,7 @@ export function MediaPicker(props: Props) {
           </footer>
         ) : null}
       </div>
-    </>
+    </div>,
+    document.body,
   );
 }

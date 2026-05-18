@@ -50,14 +50,19 @@ export function Sidebar({ role, open, onClose }: SidebarProps) {
             : "-translate-x-full lg:translate-x-0",
         )}
       >
-        <div className="flex items-baseline gap-1.5 px-1.5 pb-4 pt-1">
+        <Link
+          href="/"
+          onClick={onClose}
+          aria-label="Deligo home"
+          className="flex items-baseline gap-1.5 px-1.5 pb-4 pt-1 rounded-[4px] focus:outline-none focus:ring-2 focus:ring-accent/40"
+        >
           <span className="serif font-extrabold text-[22px] tracking-[-0.02em]">
             Deligo
           </span>
           <span className="font-hand text-[11px] text-accent">
             · {roleTag(role)}
           </span>
-        </div>
+        </Link>
 
         {SIDEBAR_GROUPS.map((group, gIdx) => {
           const visible = group.items.filter((i) => i.roles.includes(role));

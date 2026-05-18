@@ -95,7 +95,7 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
   {
     label: "ACCOUNT",
     items: [
-      { key: "profile", label: "Profile", href: "/profile", icon: User, roles: ALL },
+      { key: "profile", label: "Profile", href: "/dashboard/profile", icon: User, roles: ALL },
       { key: "settings", label: "Settings", href: "/dashboard/settings", icon: Settings, roles: ALL },
     ],
   },
@@ -119,7 +119,7 @@ export const BOTTOM_TABS: SidebarItem[] = [
     icon: ImageIcon,
     roles: WRITERS,
   },
-  { key: "profile", label: "Profile", href: "/profile", icon: User, roles: ALL },
+  { key: "profile", label: "Profile", href: "/dashboard/profile", icon: User, roles: ALL },
   { key: "settings", label: "Settings", href: "/dashboard/settings", icon: Settings, roles: ALL },
 ];
 
