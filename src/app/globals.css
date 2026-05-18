@@ -150,15 +150,19 @@ h1, h2, h3, h4, h5, h6, .serif {
 @keyframes dashIn {
   to { stroke-dashoffset: 0; }
 }
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
+/* fadeIn is opacity-only on purpose — a translate-based fadeUp would
+   leave a `transform` on the element, which makes it the containing block
+   for any `position: fixed` descendants (drawers, modals, toasts) and
+   clips them to the column instead of the viewport. */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 /* Staggered entry on dashboard content columns. */
 .stagger > * {
   opacity: 0;
-  animation: fadeUp 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+  animation: fadeIn 0.45s ease-out forwards;
 }
 .stagger > *:nth-child(1) { animation-delay: 0.04s; }
 .stagger > *:nth-child(2) { animation-delay: 0.10s; }

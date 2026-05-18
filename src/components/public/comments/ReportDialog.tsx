@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { createPortal } from "react-dom";
 import { Btn } from "@/components/ui/Btn";
 import { cn } from "@/lib/utils/cn";
 
@@ -27,7 +28,12 @@ const QUICK_REASONS = [
 export function ReportDialog({ open, onClose, onSubmit }: Props) {
   const [reason, setReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const taRef = useRef<HTMLTextAreaElement | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -53,7 +59,7 @@ export function ReportDialog({ open, onClose, onSubmit }: Props) {
     return () => document.removeEventListener("keydown", onKey);
   }, [open, submitting, onClose]);
 
-  if (!open) return null;
+  if (!open || !mounted) return null;
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -70,19 +76,19 @@ export function ReportDialog({ open, onClose, onSubmit }: Props) {
   const tooShort = reason.trim().length > 0 && reason.trim().length < MIN;
   const tooLong = reason.length > MAX;
 
-  return (
+  return createPortal(
     <>
       <button
         type="button"
         aria-label="Close report dialog"
-        className="fixed inset-0 bg-ink/40 z-40"
+        className="fixed inset-0 bg-ink/40 z-[60]"
         onClick={() => (submitting ? null : onClose())}
       />
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="report-dialog-title"
-        className="fixed inset-0 z-50 flex items-center justify-center px-4"
+        className="fixed inset-0 z-[61] flex items-center justify-center px-4"
       >
         <form
           onSubmit={handleSubmit}
@@ -175,6 +181,7 @@ export function ReportDialog({ open, onClose, onSubmit }: Props) {
           </div>
         </form>
       </div>
-    </>
+    </>,
+    document.body,
   );
 }

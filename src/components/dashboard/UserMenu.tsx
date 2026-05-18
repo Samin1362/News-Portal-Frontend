@@ -132,7 +132,7 @@ export function UserMenu({ onNavigate }: UserMenuProps) {
           <ul className="flex flex-col py-1">
             <li>
               <Link
-                href="/profile"
+                href="/dashboard/profile"
                 onClick={handleNavigate}
                 role="menuitem"
                 className="flex items-center gap-2 px-3 py-2 font-hand text-[13px] hover:bg-paper-2"

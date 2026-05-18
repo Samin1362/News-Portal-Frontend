@@ -1,6 +1,7 @@
 "use client";
 
 import { Bell, Menu, Search } from "lucide-react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CRUMB_FOR_PATH } from "./nav-items";
 import { cn } from "@/lib/utils/cn";
@@ -42,11 +43,15 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
         <Menu className="w-4 h-4" strokeWidth={1.6} />
       </button>
 
-      <div className="flex lg:hidden items-baseline gap-1.5">
+      <Link
+        href="/"
+        aria-label="Deligo home"
+        className="flex lg:hidden items-baseline gap-1.5 rounded-[4px] focus:outline-none focus:ring-2 focus:ring-accent/40"
+      >
         <span className="serif font-extrabold text-[20px] tracking-[-0.02em]">
           Deligo
         </span>
-      </div>
+      </Link>
 
       <nav
         aria-label="Breadcrumb"

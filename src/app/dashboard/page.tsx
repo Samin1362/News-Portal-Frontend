@@ -132,7 +132,10 @@ export default function DashboardOverview() {
           </CardHead>
           <p className="font-sans text-[14px] text-ink">
             Manage your{" "}
-            <Link href="/profile" className="text-accent hover:underline">
+            <Link
+              href="/dashboard/profile"
+              className="text-accent hover:underline"
+            >
               profile
             </Link>
             . Need to write articles? Ask an admin to upgrade your role.
@@ -227,7 +230,7 @@ export default function DashboardOverview() {
                   label="Media library"
                 />
                 <QuickLink
-                  href="/profile"
+                  href="/dashboard/profile"
                   icon={<UserRound size={14} aria-hidden />}
                   label="Edit profile"
                 />
