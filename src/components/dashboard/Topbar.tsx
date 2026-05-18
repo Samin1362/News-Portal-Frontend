@@ -1,64 +1,90 @@
 "use client";
 
-import { Bell, Search } from "lucide-react";
+import { Bell, Menu, Search } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { CRUMB_FOR_PATH } from "./nav-items";
+import { cn } from "@/lib/utils/cn";
+
+interface TopbarProps {
+  onToggleSidebar: () => void;
+}
 
 function prettyCrumb(segment: string): string {
-  if (!segment) return "Dashboard";
+  if (!segment) return "Newsroom";
+  const fromMap = CRUMB_FOR_PATH[segment];
+  if (fromMap) return fromMap;
   return segment
     .split("-")
     .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
     .join(" ");
 }
 
-export function Topbar() {
-  const pathname = usePathname();
+export function Topbar({ onToggleSidebar }: TopbarProps) {
+  const pathname = usePathname() ?? "/dashboard";
   const parts = pathname.split("/").filter(Boolean);
+  const head = parts.length > 0 ? prettyCrumb(parts[0]!) : "Newsroom";
+  const tail =
+    parts.length > 1 ? prettyCrumb(parts[parts.length - 1]!) : null;
 
   return (
-    <div className="border-b-[1.5px] border-ink bg-paper px-4 sm:px-6 py-2.5 flex items-center gap-3">
+    <div
+      className={cn(
+        "sticky top-0 z-20 flex items-center gap-3 px-3.5 py-3 border-b-[1.5px] border-ink bg-paper",
+        "lg:px-[22px]",
+      )}
+    >
+      <button
+        type="button"
+        aria-label="Open sidebar"
+        onClick={onToggleSidebar}
+        className="lg:hidden inline-flex items-center justify-center w-9 h-9 rounded-[4px] border-[1.5px] border-ink bg-paper"
+      >
+        <Menu className="w-4 h-4" strokeWidth={1.6} />
+      </button>
+
+      <div className="flex lg:hidden items-baseline gap-1.5">
+        <span className="serif font-extrabold text-[20px] tracking-[-0.02em]">
+          Deligo
+        </span>
+      </div>
+
       <nav
         aria-label="Breadcrumb"
-        className="flex items-center gap-1.5 min-w-0"
+        className="hidden lg:flex items-center gap-1.5 font-hand text-[12px] text-muted"
       >
-        {parts.map((p, idx) => (
-          <span key={idx} className="flex items-center gap-1.5 min-w-0">
-            {idx > 0 ? (
-              <span className="font-hand text-[12px] text-muted">/</span>
-            ) : null}
-            <span
-              className={
-                idx === parts.length - 1
-                  ? "font-hand text-[12px] text-ink truncate"
-                  : "font-hand text-[12px] text-muted truncate"
-              }
-            >
-              {prettyCrumb(p)}
-            </span>
-          </span>
-        ))}
+        <span>{head}</span>
+        {tail ? (
+          <>
+            <span>/</span>
+            <span className="text-ink font-bold">{tail}</span>
+          </>
+        ) : null}
       </nav>
 
-      <div className="flex-1" />
+      <div className="grow" />
 
       <label
-        className="hidden md:flex items-center gap-1.5 h-[30px] w-[260px] px-2 border-[1.5px] border-ink rounded-sm font-hand text-[12px] text-muted"
+        className={cn(
+          "hidden lg:flex items-center gap-2 h-8 w-[260px] px-2.5",
+          "border-[1.5px] border-ink rounded-[4px] bg-paper-2",
+          "focus-within:ring-2 focus-within:ring-accent/40",
+        )}
         aria-label="Search dashboard"
       >
-        <Search size={14} aria-hidden />
+        <Search className="w-3.5 h-3.5 text-muted" strokeWidth={1.6} />
         <input
           type="search"
-          placeholder="Search…"
-          className="bg-transparent flex-1 outline-none font-hand text-[12px] text-ink placeholder:text-muted"
+          placeholder="Search drafts, media…"
+          className="bg-transparent grow outline-none font-hand text-[12.5px] text-ink placeholder:text-muted"
         />
       </label>
 
       <button
         type="button"
         aria-label="Notifications"
-        className="text-ink hover:text-accent transition-colors"
+        className="inline-flex items-center justify-center w-9 h-9 rounded-[4px] border-[1.5px] border-ink bg-paper hover:bg-paper-2 text-ink"
       >
-        <Bell size={18} aria-hidden />
+        <Bell className="w-4 h-4" strokeWidth={1.6} aria-hidden />
       </button>
     </div>
   );

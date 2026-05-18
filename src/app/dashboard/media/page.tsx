@@ -92,7 +92,7 @@ export default function MediaLibraryPage() {
   const meta = mediaQuery.data?.meta;
 
   return (
-    <div className="max-w-[1180px] mx-auto space-y-5">
+    <>
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <SectionTitle>Media library</SectionTitle>
       </div>
@@ -237,7 +237,7 @@ export default function MediaLibraryPage() {
           }}
         />
       ) : null}
-    </div>
+    </>
   );
 }
 

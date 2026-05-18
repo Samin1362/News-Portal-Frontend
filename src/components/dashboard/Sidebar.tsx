@@ -1,110 +1,138 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import {
-  FileText,
-  Gauge,
-  Image as ImageIcon,
-  ListChecks,
-  LogOut,
-  MessageSquare,
-  Megaphone,
-  Settings,
-  Tag,
-  User,
-  Users,
-} from "lucide-react";
+import { usePathname } from "next/navigation";
 import type { UserRole } from "@/lib/auth/types";
-import { useAuth } from "@/lib/auth/AuthProvider";
-import { useToast } from "@/lib/ui/toast";
+import { useJournalistCounts } from "@/hooks/useJournalistCounts";
 import { cn } from "@/lib/utils/cn";
-import { Logo } from "@/components/public/Logo";
+import { SIDEBAR_GROUPS, type SidebarItem } from "./nav-items";
+import { UserMenu } from "./UserMenu";
 
-type Item = {
-  href: string;
-  label: string;
-  Icon: typeof Gauge;
-  roles: UserRole[];
-};
+interface SidebarProps {
+  role: UserRole;
+  /** Mobile drawer state — desktop sidebar ignores both. */
+  open: boolean;
+  onClose: () => void;
+}
 
-const NAV: Item[] = [
-  { href: "/dashboard", label: "Overview", Icon: Gauge, roles: ["reader", "journalist", "editor", "admin"] },
-  { href: "/dashboard/articles", label: "My articles", Icon: FileText, roles: ["journalist", "editor", "admin"] },
-  { href: "/dashboard/media", label: "Media library", Icon: ImageIcon, roles: ["journalist", "editor", "admin"] },
-  { href: "/dashboard/editor/queue", label: "Review queue", Icon: ListChecks, roles: ["editor", "admin"] },
-  { href: "/dashboard/admin/users", label: "Users", Icon: Users, roles: ["admin"] },
-  { href: "/dashboard/admin/categories", label: "Categories", Icon: Tag, roles: ["admin"] },
-  { href: "/dashboard/admin/comments", label: "Comments", Icon: MessageSquare, roles: ["editor", "admin"] },
-  { href: "/dashboard/admin/ads", label: "Ads", Icon: Megaphone, roles: ["admin"] },
-  { href: "/profile", label: "Profile", Icon: User, roles: ["reader", "journalist", "editor", "admin"] },
-  { href: "/dashboard/settings", label: "Settings", Icon: Settings, roles: ["reader", "journalist", "editor", "admin"] },
-];
+export function Sidebar({ role, open, onClose }: SidebarProps) {
+  const pathname = usePathname() ?? "/";
+  const { counts } = useJournalistCounts();
 
-export function Sidebar({ role }: { role: UserRole }) {
-  const pathname = usePathname();
-  const router = useRouter();
-  const { signOut, profile } = useAuth();
-  const toast = useToast();
-  const items = NAV.filter((i) => i.roles.includes(role));
-
-  async function handleSignOut() {
-    try {
-      await signOut();
-      toast.info("Signed out.");
-      router.replace("/");
-    } catch {
-      toast.error("Could not sign out. Try again.");
-    }
-  }
+  const resolveCount = (item: SidebarItem): number => {
+    if (!item.countKey || !counts) return 0;
+    if (item.countKey === "drafts") return counts.draft;
+    if (item.countKey === "submitted") return counts.review;
+    if (item.countKey === "rejected") return counts.rejected;
+    return 0;
+  };
 
   return (
-    <aside className="hidden md:flex w-[220px] shrink-0 flex-col border-r-[1.5px] border-ink bg-paper-2">
-      <div className="px-4 py-4 border-b-[1.5px] border-ink">
-        <Logo size="sm" withTagline={false} />
-        <div className="font-hand text-[11px] text-muted mt-1">
-          Newsroom dashboard
+    <>
+      {/* Mobile backdrop */}
+      <div
+        className={cn(
+          "fixed inset-0 z-30 bg-ink/35 lg:hidden",
+          open ? "block" : "hidden",
+        )}
+        onClick={onClose}
+        aria-hidden
+      />
+      <aside
+        className={cn(
+          "z-40 bg-paper-2 border-r-[1.5px] border-ink",
+          "flex flex-col gap-0.5 p-3 pt-4",
+          "fixed inset-y-0 left-0 w-[260px]",
+          "lg:sticky lg:top-0 lg:h-screen lg:w-[240px] lg:translate-x-0",
+          "transition-transform duration-300 ease-out overflow-y-auto",
+          open
+            ? "translate-x-0 shadow-xl"
+            : "-translate-x-full lg:translate-x-0",
+        )}
+      >
+        <div className="flex items-baseline gap-1.5 px-1.5 pb-4 pt-1">
+          <span className="serif font-extrabold text-[22px] tracking-[-0.02em]">
+            Deligo
+          </span>
+          <span className="font-hand text-[11px] text-accent">
+            · {roleTag(role)}
+          </span>
         </div>
-      </div>
 
-      <nav aria-label="Dashboard" className="flex-1 px-2 py-3 space-y-0.5">
-        {items.map(({ href, label, Icon }) => {
-          const active = pathname === href || pathname.startsWith(`${href}/`);
+        {SIDEBAR_GROUPS.map((group, gIdx) => {
+          const visible = group.items.filter((i) => i.roles.includes(role));
+          if (visible.length === 0) return null;
           return (
-            <Link
-              key={href}
-              href={href}
-              className={cn(
-                "flex items-center gap-2.5 px-2.5 py-2 rounded-sm font-hand text-[13px]",
-                "transition-colors",
-                active
-                  ? "bg-ink text-paper"
-                  : "text-ink hover:bg-paper hover:text-accent",
-              )}
-            >
-              <Icon size={14} aria-hidden />
-              <span>{label}</span>
-            </Link>
+            <div key={`${group.label}-${gIdx}`}>
+              <div className="font-hand text-[10px] text-muted tracking-[0.12em] px-2 pb-1 pt-3">
+                {group.label}
+              </div>
+              {visible.map((item) => {
+                const Icon = item.icon;
+                const isActive =
+                  item.href === "/dashboard"
+                    ? pathname === "/dashboard"
+                    : pathname === item.href ||
+                      pathname.startsWith(`${item.href}/`);
+                const count = resolveCount(item);
+                return (
+                  <Link
+                    key={item.key}
+                    href={item.href}
+                    onClick={onClose}
+                    aria-current={isActive ? "page" : undefined}
+                    className={cn(
+                      "relative flex items-center gap-2.5 px-2.5 py-2 rounded-[4px]",
+                      "font-hand text-[13.5px] text-ink cursor-pointer",
+                      "transition-[background,color,padding] duration-[180ms]",
+                      "hover:bg-ink/5 hover:pl-3.5",
+                      "focus:outline-none focus:ring-2 focus:ring-accent/40",
+                      isActive &&
+                        "bg-ink text-paper hover:bg-ink hover:pl-3.5",
+                    )}
+                  >
+                    {isActive ? (
+                      <span
+                        aria-hidden
+                        className="absolute left-[-12px] top-2 bottom-2 w-[3px] bg-accent rounded-[2px]"
+                      />
+                    ) : null}
+                    <Icon
+                      className={cn(
+                        "w-[18px] h-[18px]",
+                        isActive ? "text-paper" : "text-muted",
+                      )}
+                      strokeWidth={1.6}
+                    />
+                    <span className="grow">{item.label}</span>
+                    {item.countKey && count > 0 ? (
+                      <span
+                        className={cn(
+                          "ml-auto font-hand text-[11px] px-[7px] py-[1px] rounded-full border-[1.2px]",
+                          isActive
+                            ? "bg-accent text-paper border-accent"
+                            : "bg-paper text-ink border-ink",
+                        )}
+                      >
+                        {count}
+                      </span>
+                    ) : null}
+                  </Link>
+                );
+              })}
+            </div>
           );
         })}
-      </nav>
 
-      <div className="px-3 py-3 border-t-[1.5px] border-ink space-y-2">
-        <div className="font-hand text-[11px] text-muted leading-tight">
-          {profile?.displayName ? (
-            <span className="block text-ink truncate">{profile.displayName}</span>
-          ) : null}
-          Signed in as <span className="text-ink">{role}</span>
-        </div>
-        <button
-          type="button"
-          onClick={handleSignOut}
-          className="w-full flex items-center gap-2 px-2 py-1.5 border-[1.5px] border-ink rounded-sm font-hand text-[12px] text-ink hover:bg-paper transition-colors"
-        >
-          <LogOut size={12} aria-hidden />
-          Sign out
-        </button>
-      </div>
-    </aside>
+        <UserMenu onNavigate={onClose} />
+      </aside>
+    </>
   );
+}
+
+function roleTag(role: UserRole): string {
+  if (role === "admin") return "admin";
+  if (role === "editor") return "editor";
+  if (role === "journalist") return "journalist";
+  return "newsroom";
 }
