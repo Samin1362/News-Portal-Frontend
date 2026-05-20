@@ -15,6 +15,7 @@ import { registerMedia } from "@/lib/api/media.api";
 import {
   CloudinaryUploadError,
   uploadToCloudinary,
+  type CloudinaryAsset,
 } from "@/lib/cloudinary/upload";
 import type { MediaDTO, MediaType } from "@/lib/types/media";
 import { cn } from "@/lib/utils/cn";
@@ -26,8 +27,18 @@ interface Props {
   multiple?: boolean;
   /** Optional articleId to attach the media row to on registration. */
   articleId?: string;
-  /** Fired once per successful upload + registration. */
-  onUploaded: (media: MediaDTO) => void;
+  /**
+   * `"register"` (default) — POST `/api/v1/media` after Cloudinary upload so
+   *   the file shows up in the user's media library. Requires journalist+.
+   * `"direct"` — skip backend registration; useful for flows like the
+   *   reader role-request avatar where the user has no media library yet
+   *   and the consumer only needs the Cloudinary `publicId`.
+   */
+  mode?: "register" | "direct";
+  /** Fired once per successful upload (and registration if `mode="register"`). */
+  onUploaded?: (media: MediaDTO) => void;
+  /** Fired in `mode="direct"` with the raw Cloudinary asset. */
+  onDirectUploaded?: (asset: CloudinaryAsset) => void;
   /** Compact variant used inside picker drawers. */
   size?: "default" | "compact";
 }
@@ -56,7 +67,9 @@ export function CloudinaryUploader({
   accept = "image",
   multiple = false,
   articleId,
+  mode = "register",
   onUploaded,
+  onDirectUploaded,
   size = "default",
 }: Props) {
   const { getIdToken } = useAuth();
@@ -85,16 +98,21 @@ export function CloudinaryUploader({
         const asset = await uploadToCloudinary(item.file, {
           onProgress: (f) => updateItem(item.id, { progress: f }),
         });
-        updateItem(item.id, { status: "registering", progress: 1 });
-        const token = await getIdToken();
-        if (!token) throw new Error("Not signed in.");
-        const inferredType: MediaType = asset.type;
-        const media = await registerMedia(
-          { ...asset, type: inferredType, articleId },
-          token,
-        );
-        updateItem(item.id, { status: "done" });
-        onUploaded(media);
+        if (mode === "direct") {
+          updateItem(item.id, { status: "done", progress: 1 });
+          onDirectUploaded?.(asset);
+        } else {
+          updateItem(item.id, { status: "registering", progress: 1 });
+          const token = await getIdToken();
+          if (!token) throw new Error("Not signed in.");
+          const inferredType: MediaType = asset.type;
+          const media = await registerMedia(
+            { ...asset, type: inferredType, articleId },
+            token,
+          );
+          updateItem(item.id, { status: "done" });
+          onUploaded?.(media);
+        }
         // Quietly drop the row after a short success flash.
         setTimeout(() => removeItem(item.id), 1200);
       } catch (err) {
@@ -108,7 +126,16 @@ export function CloudinaryUploader({
         toast.error(message);
       }
     },
-    [articleId, getIdToken, onUploaded, removeItem, toast, updateItem],
+    [
+      articleId,
+      getIdToken,
+      mode,
+      onDirectUploaded,
+      onUploaded,
+      removeItem,
+      toast,
+      updateItem,
+    ],
   );
 
   const enqueue = useCallback(
@@ -170,7 +197,9 @@ export function CloudinaryUploader({
           <span className="text-accent underline">browse</span>
         </span>
         <span className="font-hand text-[10px] text-muted">
-          Uploaded to Cloudinary, registered in your library.
+          {mode === "direct"
+            ? "Uploaded to Cloudinary."
+            : "Uploaded to Cloudinary, registered in your library."}
         </span>
         <input
           id={`uploader-${size}`}
@@ -219,7 +248,8 @@ export function CloudinaryUploader({
                 <span className="font-hand text-[10px] text-muted">
                   {item.status === "uploading" && "Uploading…"}
                   {item.status === "registering" && "Saving to library…"}
-                  {item.status === "done" && "Done"}
+                  {item.status === "done" &&
+                    (mode === "direct" ? "Uploaded" : "Done")}
                   {item.status === "error" && (item.message ?? "Failed")}
                   {item.status === "queued" && "Queued"}
                 </span>

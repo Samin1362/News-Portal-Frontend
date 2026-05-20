@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   FileText,
   ImageIcon,
+  Pencil,
   Plus,
   Settings,
   UserRound,
@@ -17,6 +18,7 @@ import { Spark } from "@/components/ui/Spark";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { listMine } from "@/lib/api/articles.api";
 import { useJournalistCounts } from "@/hooks/useJournalistCounts";
+import { useMyRoleRequest } from "@/hooks/useMyRoleRequest";
 import { StatusPill } from "@/components/dashboard/articles/StatusPill";
 import { Greeting } from "@/components/dashboard/Greeting";
 import { timeAgo } from "@/lib/utils/format";
@@ -125,22 +127,25 @@ export default function DashboardOverview() {
           />
         </div>
       ) : (
-        <Card>
-          <CardHead>
-            <CardTitle>Reader account</CardTitle>
-            <Pill variant="default">Role: {role ?? "reader"}</Pill>
-          </CardHead>
-          <p className="font-sans text-[14px] text-ink">
-            Manage your{" "}
-            <Link
-              href="/dashboard/profile"
-              className="text-accent hover:underline"
-            >
-              profile
-            </Link>
-            . Need to write articles? Ask an admin to upgrade your role.
-          </p>
-        </Card>
+        <>
+          <BecomeJournalistCta />
+          <Card>
+            <CardHead>
+              <CardTitle>Reader account</CardTitle>
+              <Pill variant="default">Role: {role ?? "reader"}</Pill>
+            </CardHead>
+            <p className="font-sans text-[14px] text-ink">
+              Manage your{" "}
+              <Link
+                href="/dashboard/profile"
+                className="text-accent hover:underline"
+              >
+                profile
+              </Link>
+              {" "}or read more on Deligo News.
+            </p>
+          </Card>
+        </>
       )}
 
       {isJournalist ? (
@@ -279,5 +284,75 @@ function QuickLink({
         <span className="font-hand text-[12px] text-muted">→</span>
       </Link>
     </li>
+  );
+}
+
+function BecomeJournalistCta() {
+  const { data: req, isPending } = useMyRoleRequest();
+
+  // Existing pending/rejected requests get a different CTA that points to the
+  // status page instead of re-starting the form.
+  if (isPending) {
+    return (
+      <Card accent className="animate-pulse">
+        <div className="h-5 bg-paper-2 rounded w-1/3" />
+        <div className="h-4 bg-paper-2 rounded w-2/3 mt-2" />
+      </Card>
+    );
+  }
+
+  if (req && (req.status === "pending" || req.status === "rejected")) {
+    const isPendingReq = req.status === "pending";
+    return (
+      <Card accent>
+        <CardHead>
+          <CardTitle>
+            {isPendingReq
+              ? "Your journalist application is under review"
+              : "Your journalist application needs a refresh"}
+          </CardTitle>
+          <Pill variant={isPendingReq ? "default" : "red"}>
+            {isPendingReq ? "Pending" : "Rejected"}
+          </Pill>
+        </CardHead>
+        <p className="font-sans text-[13.5px] text-ink/85 leading-relaxed">
+          {isPendingReq
+            ? "We aim to respond within 48 hours. You'll receive an email when an admin reaches a decision."
+            : "An admin reviewed your application — open the status page to see their feedback and your next steps."}
+        </p>
+        <div>
+          <Link href="/dashboard/become-journalist/status">
+            <Btn variant="primary" size="sm">
+              View status →
+            </Btn>
+          </Link>
+        </div>
+      </Card>
+    );
+  }
+
+  return (
+    <Card accent>
+      <CardHead>
+        <CardTitle>Become a journalist</CardTitle>
+        <Pill variant="red" dot>
+          5-min form
+        </Pill>
+      </CardHead>
+      <p className="font-sans text-[13.5px] text-ink/85 leading-relaxed">
+        Want to publish on Deligo News? Tell us about your background and the
+        beats you cover. Approved applicants get a journalist seat — start
+        drafting articles the next time you sign in.
+      </p>
+      <div>
+        <Link href="/dashboard/become-journalist">
+          <Btn variant="primary" size="sm">
+            <span className="inline-flex items-center gap-1.5">
+              <Pencil size={12} aria-hidden /> Start application
+            </span>
+          </Btn>
+        </Link>
+      </div>
+    </Card>
   );
 }

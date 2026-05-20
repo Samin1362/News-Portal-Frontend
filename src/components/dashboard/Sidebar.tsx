@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { UserRole } from "@/lib/auth/types";
 import { useJournalistCounts } from "@/hooks/useJournalistCounts";
+import { useMyRoleRequest } from "@/hooks/useMyRoleRequest";
 import { cn } from "@/lib/utils/cn";
 import { SIDEBAR_GROUPS, type SidebarItem } from "./nav-items";
 import { UserMenu } from "./UserMenu";
@@ -15,16 +16,30 @@ interface SidebarProps {
   onClose: () => void;
 }
 
+interface NavBadge {
+  label: string;
+  /** "warn" = amber (pending), undefined = default ink. */
+  tone?: "warn";
+}
+
 export function Sidebar({ role, open, onClose }: SidebarProps) {
   const pathname = usePathname() ?? "/";
   const { counts } = useJournalistCounts();
+  const { data: roleRequest } = useMyRoleRequest();
 
-  const resolveCount = (item: SidebarItem): number => {
-    if (!item.countKey || !counts) return 0;
-    if (item.countKey === "drafts") return counts.draft;
-    if (item.countKey === "submitted") return counts.review;
-    if (item.countKey === "rejected") return counts.rejected;
-    return 0;
+  const resolveBadge = (item: SidebarItem): NavBadge | null => {
+    if (!item.countKey) return null;
+    if (item.countKey === "role-request") {
+      if (roleRequest?.status === "pending") return { label: "Pending", tone: "warn" };
+      if (roleRequest?.status === "rejected") return { label: "Rejected" };
+      return null;
+    }
+    if (!counts) return null;
+    let n = 0;
+    if (item.countKey === "drafts") n = counts.draft;
+    else if (item.countKey === "submitted") n = counts.review;
+    else if (item.countKey === "rejected") n = counts.rejected;
+    return n > 0 ? { label: String(n) } : null;
   };
 
   return (
@@ -79,7 +94,7 @@ export function Sidebar({ role, open, onClose }: SidebarProps) {
                     ? pathname === "/dashboard"
                     : pathname === item.href ||
                       pathname.startsWith(`${item.href}/`);
-                const count = resolveCount(item);
+                const badge = resolveBadge(item);
                 return (
                   <Link
                     key={item.key}
@@ -110,16 +125,18 @@ export function Sidebar({ role, open, onClose }: SidebarProps) {
                       strokeWidth={1.6}
                     />
                     <span className="grow">{item.label}</span>
-                    {item.countKey && count > 0 ? (
+                    {badge ? (
                       <span
                         className={cn(
-                          "ml-auto font-hand text-[11px] px-[7px] py-[1px] rounded-full border-[1.2px]",
+                          "ml-auto font-hand text-[11px] px-[7px] py-[1px] rounded-full border-[1.2px] whitespace-nowrap",
                           isActive
                             ? "bg-accent text-paper border-accent"
-                            : "bg-paper text-ink border-ink",
+                            : badge.tone === "warn"
+                              ? "bg-accent text-paper border-accent"
+                              : "bg-paper text-ink border-ink",
                         )}
                       >
-                        {count}
+                        {badge.label}
                       </span>
                     ) : null}
                   </Link>

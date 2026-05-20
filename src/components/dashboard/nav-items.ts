@@ -7,6 +7,7 @@ import {
   ListChecks,
   Megaphone,
   MessageSquare,
+  Pencil,
   Settings,
   Tag,
   User,
@@ -21,7 +22,7 @@ export interface SidebarItem {
   icon: LucideIcon;
   roles: UserRole[];
   /** Optional count badge key, fed from the live counts hook. */
-  countKey?: "drafts" | "submitted" | "rejected";
+  countKey?: "drafts" | "submitted" | "rejected" | "role-request";
 }
 
 export interface SidebarGroup {
@@ -33,6 +34,7 @@ const ALL: UserRole[] = ["reader", "journalist", "editor", "admin"];
 const WRITERS: UserRole[] = ["journalist", "editor", "admin"];
 const DESK: UserRole[] = ["editor", "admin"];
 const ADMIN_ONLY: UserRole[] = ["admin"];
+const READER_ONLY: UserRole[] = ["reader"];
 
 /**
  * Grouped sidebar nav. The Sidebar component filters each group by role and
@@ -62,6 +64,14 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
         href: "/dashboard/media",
         icon: ImageIcon,
         roles: WRITERS,
+      },
+      {
+        key: "become-journalist",
+        label: "Become a journalist",
+        href: "/dashboard/become-journalist",
+        icon: Pencil,
+        roles: READER_ONLY,
+        countKey: "role-request",
       },
     ],
   },
@@ -139,4 +149,6 @@ export const CRUMB_FOR_PATH: Record<string, string> = {
   ads: "Ads",
   settings: "Settings",
   profile: "Profile",
+  "become-journalist": "Become a journalist",
+  status: "Status",
 };
