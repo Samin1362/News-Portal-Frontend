@@ -12,6 +12,8 @@
   --color-muted: #8a8378;
   --color-accent: #c8321b;
   --color-accent-2: #2d6b3f;
+  --color-warn: #b3711f;
+  --color-info: #2f5a86;
 
   --font-serif: var(--font-serif-google), "Times New Roman", serif;
   --font-sans: var(--font-sans-google), system-ui, sans-serif;
@@ -190,4 +192,36 @@ h1, h2, h3, h4, h5, h6, .serif {
   transform: translateX(2px);
   box-shadow: -4px 0 0 var(--color-accent);
   border-color: var(--color-accent);
+}
+
+/* Sidebar active-item left rail accent — mirrors admin shell. */
+.nav-active {
+  position: relative;
+}
+.nav-active::before {
+  content: "";
+  position: absolute;
+  left: -2px;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  background: var(--color-accent);
+  border-radius: 2px;
+}
+
+/* Pulsing live dot — used after a "live · N readers" pill or status chip. */
+@keyframes livepulse {
+  0%, 100% { transform: scale(1);   opacity: 0.9; }
+  50%      { transform: scale(1.5); opacity: 0.3; }
+}
+.live-dot::after {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-left: 6px;
+  border-radius: 999px;
+  background: var(--color-accent);
+  vertical-align: middle;
+  animation: livepulse 1.6s ease-in-out infinite;
 }

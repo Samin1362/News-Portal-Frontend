@@ -20,9 +20,21 @@ import { listMine } from "@/lib/api/articles.api";
 import { useJournalistCounts } from "@/hooks/useJournalistCounts";
 import { useMyRoleRequest } from "@/hooks/useMyRoleRequest";
 import { StatusPill } from "@/components/dashboard/articles/StatusPill";
-import { Greeting } from "@/components/dashboard/Greeting";
 import { timeAgo } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";
+
+function firstName(displayName: string | null | undefined): string {
+  if (!displayName) return "there";
+  const trimmed = displayName.trim();
+  if (!trimmed) return "there";
+  return trimmed.split(/\s+/)[0]!;
+}
+
+function partOfDay(hour: number): string {
+  if (hour < 12) return "morning";
+  if (hour < 18) return "afternoon";
+  return "evening";
+}
 
 const JOURNALIST_ROLES = ["journalist", "editor", "admin"] as const;
 
@@ -50,30 +62,42 @@ export default function DashboardOverview() {
   });
 
   const items = recentDrafts.data?.items ?? [];
-  const greetingMeta = counts
-    ? `${counts.draft} ${counts.draft === 1 ? "draft" : "drafts"} · ${counts.review} awaiting review`
-    : undefined;
+  const now = new Date();
+  const summary = counts
+    ? `${counts.draft} ${counts.draft === 1 ? "draft" : "drafts"} · ${counts.review} awaiting review · ${counts.published} live`
+    : "Live data — refreshed every 30s";
 
   return (
     <>
-      <div className="flex items-start justify-between gap-3 flex-wrap">
-        <Greeting meta={greetingMeta} />
+      <section className="flex items-end justify-between gap-4 flex-wrap">
+        <div>
+          <p className="font-hand text-[12px] uppercase tracking-wider text-muted">
+            {isJournalist ? "Newsroom · Today" : "Reader account"}
+          </p>
+          <h1 className="serif text-[34px] sm:text-[40px] font-extrabold tracking-tight leading-none mt-1">
+            Good {partOfDay(now.getHours())},{" "}
+            <span className="uline">{firstName(profile?.displayName)}</span>.
+          </h1>
+          <p className="mt-2 font-hand text-[12px] text-muted">{summary}</p>
+        </div>
         {isJournalist ? (
           <div className="flex items-center gap-2 flex-wrap">
             <Pill variant="green" dot>
               on shift
             </Pill>
-            <Btn variant="primary" size="sm">
-              <Link
-                href="/dashboard/articles/new"
-                className="inline-flex items-center gap-1.5"
-              >
-                <Plus size={12} aria-hidden /> Write new article
-              </Link>
-            </Btn>
+            <Link
+              href="/dashboard/articles/new"
+              className="inline-flex"
+            >
+              <Btn variant="primary" size="sm">
+                <span className="inline-flex items-center gap-1.5">
+                  <Plus size={12} aria-hidden /> Write new article
+                </span>
+              </Btn>
+            </Link>
           </div>
         ) : null}
-      </div>
+      </section>
 
       {isJournalist ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">

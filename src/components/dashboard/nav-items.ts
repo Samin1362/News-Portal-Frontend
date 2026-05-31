@@ -4,14 +4,9 @@ import {
   Gauge,
   Home,
   Image as ImageIcon,
-  ListChecks,
-  Megaphone,
-  MessageSquare,
   Pencil,
   Settings,
-  Tag,
   User,
-  Users,
 } from "lucide-react";
 import type { UserRole } from "@/lib/auth/types";
 
@@ -32,13 +27,17 @@ export interface SidebarGroup {
 
 const ALL: UserRole[] = ["reader", "journalist", "editor", "admin"];
 const WRITERS: UserRole[] = ["journalist", "editor", "admin"];
-const DESK: UserRole[] = ["editor", "admin"];
-const ADMIN_ONLY: UserRole[] = ["admin"];
 const READER_ONLY: UserRole[] = ["reader"];
 
 /**
- * Grouped sidebar nav. The Sidebar component filters each group by role and
- * skips groups whose items are all hidden.
+ * Grouped sidebar nav for the journalist/reader dashboard. The Sidebar
+ * component filters each group by role and skips groups whose items are all
+ * hidden.
+ *
+ * NOTE: Editorial-desk and admin tools (review queue, comment moderation,
+ * users, categories, ads) live in the dedicated admin portal
+ * (`admin_frontend`), not here — so they are intentionally absent from this
+ * nav. This dashboard stays journalist/reader self-service only.
  */
 export const SIDEBAR_GROUPS: SidebarGroup[] = [
   {
@@ -73,33 +72,6 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
         roles: READER_ONLY,
         countKey: "role-request",
       },
-    ],
-  },
-  {
-    label: "DESK",
-    items: [
-      {
-        key: "queue",
-        label: "Review queue",
-        href: "/dashboard/editor/queue",
-        icon: ListChecks,
-        roles: DESK,
-      },
-      {
-        key: "comments",
-        label: "Comments",
-        href: "/dashboard/admin/comments",
-        icon: MessageSquare,
-        roles: DESK,
-      },
-    ],
-  },
-  {
-    label: "ADMIN",
-    items: [
-      { key: "users", label: "Users", href: "/dashboard/admin/users", icon: Users, roles: ADMIN_ONLY },
-      { key: "categories", label: "Categories", href: "/dashboard/admin/categories", icon: Tag, roles: ADMIN_ONLY },
-      { key: "ads", label: "Ads", href: "/dashboard/admin/ads", icon: Megaphone, roles: ADMIN_ONLY },
     ],
   },
   {
@@ -140,13 +112,6 @@ export const CRUMB_FOR_PATH: Record<string, string> = {
   new: "New article",
   edit: "Edit",
   media: "Media library",
-  editor: "Desk",
-  queue: "Review queue",
-  admin: "Admin",
-  users: "Users",
-  categories: "Categories",
-  comments: "Comments",
-  ads: "Ads",
   settings: "Settings",
   profile: "Profile",
   "become-journalist": "Become a journalist",
