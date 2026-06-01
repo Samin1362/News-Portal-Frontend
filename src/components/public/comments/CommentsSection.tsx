@@ -91,8 +91,8 @@ export function CommentsSection({
 
   useEffect(() => {
     let active = true;
-    setLoading(true);
     (async () => {
+      setLoading(true);
       await fetchPage(1, false);
       if (active) setLoading(false);
     })();

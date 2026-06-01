@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
@@ -149,13 +149,17 @@ export function ArticleForm({ article }: Props) {
   );
 
   // Re-sync local state if the article prop changes after a save (e.g. fresh
-  // server response replaces the local optimistic state).
-  useEffect(() => {
+  // server response replaces the local optimistic state). Comparing the
+  // previous prop during render — instead of an effect — keeps the sync
+  // synchronous and avoids set-state-in-effect.
+  const [prevArticle, setPrevArticle] = useState(article);
+  if (article !== prevArticle) {
+    setPrevArticle(article);
     if (article) {
       setState(fromArticle(article));
       setSavedId(article.id);
     }
-  }, [article]);
+  }
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setState((prev) => ({ ...prev, [key]: value }));

@@ -10,7 +10,6 @@ if (!BASE_URL && typeof window !== "undefined") {
   // Warn in the browser when the env var is missing — server crashes hard
   // via Zod-validated env on the backend side; here we surface the misconfig
   // without bringing the whole app down.
-  // eslint-disable-next-line no-console
   console.warn("NEXT_PUBLIC_API_BASE_URL is not set");
 }
 
