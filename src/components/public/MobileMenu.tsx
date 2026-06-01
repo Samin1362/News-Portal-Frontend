@@ -30,10 +30,14 @@ export function MobileMenu({ nav, todayLabel }: Props) {
   const router = useRouter();
   const { firebaseUser, profile, signOut } = useAuth();
 
-  // Close the drawer whenever the route changes.
-  useEffect(() => {
+  // Close the drawer whenever the route changes. Tracking the previous path
+  // and adjusting during render (rather than in an effect) keeps the close
+  // synchronous and avoids set-state-in-effect.
+  const [prevPath, setPrevPath] = useState(pathname);
+  if (pathname !== prevPath) {
+    setPrevPath(pathname);
     setOpen(false);
-  }, [pathname]);
+  }
 
   // Lock body scroll while the drawer is open.
   useEffect(() => {

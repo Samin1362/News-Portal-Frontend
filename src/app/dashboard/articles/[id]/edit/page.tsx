@@ -62,7 +62,7 @@ export default function EditArticlePage({
       <div className="max-w-[680px] mx-auto border-[1.5px] border-accent rounded-sm bg-paper p-5">
         <h2 className="serif text-[18px] font-bold">Article not found</h2>
         <p className="mt-1 font-sans text-[13px] text-muted">
-          It may have been deleted, or you don't have access.
+          It may have been deleted, or you don&apos;t have access.
         </p>
         <div className="mt-3">
           <Btn variant="default">

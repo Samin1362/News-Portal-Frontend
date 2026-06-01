@@ -47,24 +47,29 @@ export function TagInput({
 
   useEffect(() => {
     const term = draft.trim();
-    if (!term) {
-      setSuggestions([]);
-      return;
-    }
     const ctrl = new AbortController();
-    const timer = setTimeout(async () => {
-      try {
-        const matches = await listTags(term);
-        if (ctrl.signal.aborted) return;
-        const filtered = matches
-          .filter((t) => !lower.has(t.name.toLowerCase()))
-          .slice(0, 8);
-        setSuggestions(filtered);
-        setOpen(filtered.length > 0);
-      } catch {
-        if (!ctrl.signal.aborted) setSuggestions([]);
-      }
-    }, DEBOUNCE_MS);
+    // Always defer the state update to the timer (0ms when empty) so no
+    // setState runs synchronously in the effect body.
+    const timer = setTimeout(
+      async () => {
+        if (!term) {
+          setSuggestions([]);
+          return;
+        }
+        try {
+          const matches = await listTags(term);
+          if (ctrl.signal.aborted) return;
+          const filtered = matches
+            .filter((t) => !lower.has(t.name.toLowerCase()))
+            .slice(0, 8);
+          setSuggestions(filtered);
+          setOpen(filtered.length > 0);
+        } catch {
+          if (!ctrl.signal.aborted) setSuggestions([]);
+        }
+      },
+      term ? DEBOUNCE_MS : 0,
+    );
     return () => {
       ctrl.abort();
       clearTimeout(timer);

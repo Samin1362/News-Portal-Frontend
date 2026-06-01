@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { createPortal } from "react-dom";
 import { Btn } from "@/components/ui/Btn";
+import { useIsClient } from "@/hooks/useIsClient";
 import { cn } from "@/lib/utils/cn";
 
 interface Props {
@@ -28,12 +29,17 @@ const QUICK_REASONS = [
 export function ReportDialog({ open, onClose, onSubmit }: Props) {
   const [reason, setReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const isClient = useIsClient();
   const taRef = useRef<HTMLTextAreaElement | null>(null);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  // Clear the textarea each time the dialog opens. Done during render via a
+  // previous-value compare (not an effect) so no setState runs in an effect
+  // body.
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
+    if (open) setReason("");
+  }
 
   useEffect(() => {
     if (!open) return;
@@ -46,7 +52,6 @@ export function ReportDialog({ open, onClose, onSubmit }: Props) {
 
   useEffect(() => {
     if (!open) return;
-    setReason("");
     requestAnimationFrame(() => taRef.current?.focus());
   }, [open]);
 
@@ -59,7 +64,7 @@ export function ReportDialog({ open, onClose, onSubmit }: Props) {
     return () => document.removeEventListener("keydown", onKey);
   }, [open, submitting, onClose]);
 
-  if (!open || !mounted) return null;
+  if (!open || !isClient) return null;
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -102,7 +107,8 @@ export function ReportDialog({ open, onClose, onSubmit }: Props) {
             Report comment
           </h2>
           <p className="mt-1 font-hand text-[11px] text-muted">
-            Tell our editors what's wrong. Reports are reviewed by moderators.
+            Tell our editors what&apos;s wrong. Reports are reviewed by
+            moderators.
           </p>
 
           <div className="mt-3 flex flex-wrap gap-1.5">

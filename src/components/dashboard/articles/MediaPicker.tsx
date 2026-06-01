@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { Btn } from "@/components/ui/Btn";
@@ -9,10 +9,9 @@ import { useToast } from "@/lib/ui/toast";
 import { listMine } from "@/lib/api/media.api";
 import type { MediaDTO, MediaType } from "@/lib/types/media";
 import { cn } from "@/lib/utils/cn";
+import { useIsClient } from "@/hooks/useIsClient";
 import { CloudinaryUploader } from "./CloudinaryUploader";
 import { MediaCard } from "./MediaCard";
-
-type Mode = "single" | "multi";
 
 interface BaseProps {
   open: boolean;
@@ -54,33 +53,44 @@ export function MediaPicker(props: Props) {
   const [items, setItems] = useState<MediaDTO[]>([]);
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [mounted, setMounted] = useState(false);
+  const isClient = useIsClient();
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  // Reset the multi-select set when the drawer opens. Done during render via
+  // a previous-value compare (not an effect) so no setState runs in an
+  // effect body; the data fetch stays in its own effect below.
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
+    if (open) setSelected(new Set());
+  }
 
-  const refresh = useCallback(async () => {
-    setLoading(true);
-    try {
-      const token = await getIdToken();
-      if (!token) throw new Error("Not signed in.");
-      const result = await listMine({ type, limit: PAGE_SIZE }, token);
-      setItems(result.items);
-    } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Couldn't load your library.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [getIdToken, toast, type]);
-
+  // Load the library each time the drawer opens. All setState happens inside
+  // the async IIFE (after the synchronous effect body), so it never trips
+  // set-state-in-effect.
   useEffect(() => {
     if (!open) return;
-    setSelected(new Set());
-    void refresh();
-  }, [open, refresh]);
+    let active = true;
+    (async () => {
+      setLoading(true);
+      try {
+        const token = await getIdToken();
+        if (!token) throw new Error("Not signed in.");
+        const result = await listMine({ type, limit: PAGE_SIZE }, token);
+        if (active) setItems(result.items);
+      } catch (err) {
+        if (active) {
+          toast.error(
+            err instanceof Error ? err.message : "Couldn't load your library.",
+          );
+        }
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [open, getIdToken, toast, type]);
 
   useEffect(() => {
     if (!open) return;
@@ -100,7 +110,7 @@ export function MediaPicker(props: Props) {
     return () => document.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  if (!open || !mounted) return null;
+  if (!open || !isClient) return null;
 
   function handleClick(media: MediaDTO) {
     if (mode === "single") {

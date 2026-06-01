@@ -14,7 +14,7 @@ export default function NotFound() {
           Off the press.
         </h1>
         <p className="font-sans text-[14px] text-muted mt-3 leading-relaxed">
-          We couldn't find the story you were looking for. It may have been
+          We couldn&apos;t find the story you were looking for. It may have been
           unpublished, archived, or never existed.
         </p>
         <div className="mt-6 flex items-center justify-center gap-2">

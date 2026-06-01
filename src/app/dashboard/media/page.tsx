@@ -149,7 +149,7 @@ export default function MediaLibraryPage() {
         <p className="font-hand text-[12px] text-muted">Loading library…</p>
       ) : mediaQuery.isError ? (
         <p className="font-hand text-[12px] text-accent">
-          Couldn't load your media.{" "}
+          Couldn&apos;t load your media.{" "}
           <button
             type="button"
             onClick={() => mediaQuery.refetch()}

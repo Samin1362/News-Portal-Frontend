@@ -92,7 +92,10 @@ export default function MyArticlesPage() {
     return map;
   }, [categoriesQuery.data]);
 
-  const items = articlesQuery.data?.items ?? [];
+  const items = useMemo(
+    () => articlesQuery.data?.items ?? [],
+    [articlesQuery.data],
+  );
   const meta = articlesQuery.data?.meta;
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();

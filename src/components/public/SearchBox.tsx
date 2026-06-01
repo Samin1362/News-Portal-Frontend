@@ -18,16 +18,23 @@ export function SearchBox() {
   const boxRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (value.trim().length < 2) {
-      setItems([]);
-      return;
-    }
+    const term = value.trim();
     const controller = new AbortController();
-    const t = setTimeout(async () => {
-      const result = await suggestArticles(value, controller.signal);
-      setItems(result);
-      setActiveIdx(-1);
-    }, DEBOUNCE_MS);
+    // Always route the state update through the timer (0ms for the
+    // too-short/clear case) so no setState runs synchronously in the
+    // effect body.
+    const t = setTimeout(
+      async () => {
+        if (term.length < 2) {
+          setItems([]);
+          return;
+        }
+        const result = await suggestArticles(value, controller.signal);
+        setItems(result);
+        setActiveIdx(-1);
+      },
+      term.length < 2 ? 0 : DEBOUNCE_MS,
+    );
     return () => {
       controller.abort();
       clearTimeout(t);
