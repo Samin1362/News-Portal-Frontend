@@ -1,13 +1,19 @@
+"use client";
+
+import Image from "next/image";
+import { useQuery } from "@tanstack/react-query";
+import { getPublicAds, trackAdClick } from "@/lib/api/ads.api";
+import type { AdPlacement } from "@/lib/types/ad";
 import { cn } from "@/lib/utils/cn";
 
 interface AdSlotProps {
-  placement: string;
+  placement: AdPlacement;
   className?: string;
   /** Optional explicit height. Defaults sized per placement. */
   height?: number;
 }
 
-const DEFAULT_HEIGHT: Record<string, number> = {
+const DEFAULT_HEIGHT: Record<AdPlacement, number> = {
   home_top: 90,
   home_sidebar: 250,
   home_bottom: 90,
@@ -17,11 +23,55 @@ const DEFAULT_HEIGHT: Record<string, number> = {
 };
 
 /**
- * Placeholder ad slot. Phase 9 wires this to `GET /api/v1/public/ads`.
- * For now: dashed border, hatched background, "ADVERTISEMENT" label.
+ * Banner ad slot. Fetches the active ads for `placement` from
+ * `GET /api/v1/public/ads`, renders one creative as a sponsored link, and
+ * records a click via `POST /api/v1/public/ads/:id/click`. While loading,
+ * empty, or on error it falls back to the dashed "ADVERTISEMENT" placeholder
+ * so the layout never shifts.
  */
 export function AdSlot({ placement, className, height }: AdSlotProps) {
   const h = height ?? DEFAULT_HEIGHT[placement] ?? 90;
+
+  const { data: ads } = useQuery({
+    queryKey: ["public-ads", placement],
+    queryFn: () => getPublicAds(placement),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // First active campaign for the slot (kept deterministic so render stays
+  // pure; rotation, if wanted, is the backend's job to order).
+  const ad = ads && ads.length > 0 ? ads[0] : null;
+
+  if (ad) {
+    return (
+      <a
+        href={ad.linkUrl}
+        target="_blank"
+        rel="noopener noreferrer sponsored"
+        onClick={() => trackAdClick(ad.id)}
+        aria-label={ad.altText || ad.name || `Advertisement (${placement})`}
+        data-ad-placement={placement}
+        style={{ height: h }}
+        className={cn(
+          "relative block w-full overflow-hidden",
+          "border-[1.5px] border-ink rounded-sm bg-paper-2",
+          className,
+        )}
+      >
+        <Image
+          src={ad.imageUrl}
+          alt={ad.altText || ad.name || "Advertisement"}
+          fill
+          sizes="(max-width: 768px) 100vw, 728px"
+          className="object-contain"
+        />
+        <span className="absolute top-1 right-1 font-hand text-[9px] uppercase tracking-widest text-muted bg-paper/80 px-1 rounded-sm">
+          Ad
+        </span>
+      </a>
+    );
+  }
+
   return (
     <div
       role="complementary"
