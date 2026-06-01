@@ -278,7 +278,7 @@ export default async function ArticlePage({ params }: RouteParams) {
           </div>
 
           <aside className="space-y-6">
-            <SidebarAd />
+            <SidebarAd placement="article_sidebar" />
             {related.length > 0 ? (
               <div>
                 <SectionTitle>Related</SectionTitle>
@@ -295,7 +295,7 @@ export default async function ArticlePage({ params }: RouteParams) {
                 </div>
               </div>
             ) : null}
-            <SidebarAd />
+            <SidebarAd placement="article_sidebar" />
           </aside>
         </div>
       </div>
