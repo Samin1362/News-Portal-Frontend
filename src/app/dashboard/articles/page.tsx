@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronDown, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { Btn } from "@/components/ui/Btn";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { cn } from "@/lib/utils/cn";
 import { useAuth } from "@/lib/auth/AuthProvider";
@@ -301,11 +302,23 @@ export default function MyArticlesPage() {
             </button>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="border-[1.5px] border-ink rounded-sm bg-paper px-3 py-6 text-center text-muted font-sans text-[13px]">
-            {items.length === 0
-              ? "No articles yet — start your first draft."
-              : "No matches for that search."}
-          </div>
+          items.length === 0 ? (
+            <EmptyState
+              icon={<Plus size={22} aria-hidden />}
+              title="No articles yet"
+              description="Start your first draft — write it, save it, then submit it for review."
+              action={
+                <Btn variant="primary">
+                  <Link href="/dashboard/articles/new">New article</Link>
+                </Btn>
+              }
+            />
+          ) : (
+            <EmptyState
+              title="No matches"
+              description="No articles match that search. Try a different term or clear the filter."
+            />
+          )
         ) : (
           <ul className="flex flex-col gap-2">
             {filtered.map((a) => {
