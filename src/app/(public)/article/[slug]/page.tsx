@@ -8,7 +8,7 @@ import { SectionTitle } from "@/components/ui/SectionTitle";
 import { ArticleCard } from "@/components/public/ArticleCard";
 import { ShareButtons } from "@/components/public/ShareButtons";
 import { SidebarAd } from "@/components/public/SidebarAd";
-import { CommentsSection } from "@/components/public/comments/CommentsSection";
+import { CommentsLazy } from "@/components/public/comments/CommentsLazy";
 import { getArticleBySlug } from "@/lib/api/public.api";
 import { getArticleOg } from "@/lib/api/seo.api";
 import { listCategories } from "@/lib/api/categories.api";
@@ -28,15 +28,20 @@ export async function generateMetadata({
   const { slug } = await params;
   const og = await getArticleOg(slug);
   if (!og) return { title: "Article not found" };
+  // The backend's og.url is built from its own PUBLIC_BASE_URL with an
+  // `/articles/` (plural) path — neither matches the public reader site. The
+  // canonical URL of this page is the frontend route, so derive it locally to
+  // stay consistent with the sitemap (see app/sitemap.xml/route.ts).
+  const canonical = `${SITE_URL}/article/${slug}`;
   return {
     title: og.title,
     description: og.description,
-    alternates: { canonical: og.url },
+    alternates: { canonical },
     openGraph: {
       type: "article",
       title: og.title,
       description: og.description,
-      url: og.url,
+      url: canonical,
       siteName: og.siteName,
       images: og.image ? [{ url: og.image }] : undefined,
       publishedTime: og.publishedTime ?? undefined,
@@ -66,7 +71,8 @@ export default async function ArticlePage({ params }: RouteParams) {
   const { article, related } = response;
   const categoryById = new Map(categories.map((c) => [c.id, c]));
   const category = categoryById.get(article.categoryId);
-  const shareUrl = og?.url ?? `${SITE_URL}/article/${article.slug}`;
+  // Share the public reader URL, not the backend's og.url (API host).
+  const shareUrl = `${SITE_URL}/article/${article.slug}`;
   const authorName = og?.author ?? "Editorial";
   const sectionName = og?.section ?? category?.name ?? null;
 
@@ -269,8 +275,8 @@ export default async function ArticlePage({ params }: RouteParams) {
               />
             ) : null}
 
-            {/* Comments — Phase 4 */}
-            <CommentsSection
+            {/* Comments — Phase 4, lazy-loaded in Phase 6 */}
+            <CommentsLazy
               articleId={article.id}
               isCommentsEnabled={article.isCommentsEnabled}
               initialCount={article.commentCount}
