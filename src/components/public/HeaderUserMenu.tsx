@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, LogOut, User } from "lucide-react";
+import { ChevronDown, ExternalLink, LogOut, User } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useToast } from "@/lib/ui/toast";
 import { Btn } from "@/components/ui/Btn";
+import { portalForRole } from "@/lib/config/portals";
 
 /**
  * Auth-aware header trailing slot.
@@ -69,6 +70,9 @@ export function HeaderUserMenu() {
     .join("")
     .toUpperCase();
 
+  // Editors/admins live in a separate portal — offer a quick jump (Phase 7).
+  const portal = portalForRole(profile?.role);
+
   async function handleSignOut() {
     try {
       await signOut();
@@ -113,14 +117,26 @@ export function HeaderUserMenu() {
               {profile?.role ?? "reader"}
             </div>
           </div>
-          <Link
-            href="/dashboard"
-            onClick={() => setOpen(false)}
-            role="menuitem"
-            className="block px-3 py-2 font-hand text-[12px] text-ink hover:bg-paper-2"
-          >
-            My dashboard
-          </Link>
+          {portal?.url ? (
+            <a
+              href={portal.url}
+              onClick={() => setOpen(false)}
+              role="menuitem"
+              className="flex items-center gap-1.5 px-3 py-2 font-hand text-[12px] text-ink hover:bg-paper-2"
+            >
+              <ExternalLink size={12} aria-hidden />
+              Go to {portal.label} portal
+            </a>
+          ) : (
+            <Link
+              href="/dashboard"
+              onClick={() => setOpen(false)}
+              role="menuitem"
+              className="block px-3 py-2 font-hand text-[12px] text-ink hover:bg-paper-2"
+            >
+              My dashboard
+            </Link>
+          )}
           <Link
             href="/profile"
             onClick={() => setOpen(false)}
