@@ -5,7 +5,8 @@ import { listCategories } from "@/lib/api/categories.api";
 import { getBreaking } from "@/lib/api/public.api";
 import { BreakingTicker } from "./BreakingTicker";
 import { HeaderUserMenu } from "./HeaderUserMenu";
-import { SearchBox } from "./SearchBox";
+import { SearchProvider } from "./search/SearchProvider";
+import { SearchTrigger } from "./search/SearchTrigger";
 import { Logo } from "./Logo";
 import { MobileMenu } from "./MobileMenu";
 
@@ -54,7 +55,8 @@ export async function Header() {
   const today = formatToday();
 
   return (
-    <header className="border-b-[1.5px] border-ink bg-paper">
+    <SearchProvider>
+      <header className="border-b-[1.5px] border-ink bg-paper">
       {/* Top ad strip — hidden on mobile to free up vertical space.
           Slot is a fixed leaderboard ratio (728:90) so the image conforms
           to the slot, not the other way around. The image fills the slot
@@ -78,7 +80,10 @@ export async function Header() {
         <div className="flex justify-center min-w-0">
           <Logo size="md" align="center" withTagline={false} />
         </div>
-        <HeaderUserMenu />
+        <div className="flex items-center justify-end gap-1.5">
+          <SearchTrigger variant="icon" />
+          <HeaderUserMenu />
+        </div>
       </div>
 
       {/* ---------- Desktop masthead ---------- */}
@@ -91,7 +96,7 @@ export async function Header() {
             </div>
             <div className="flex-1" />
             <div className="flex items-center gap-3 pb-1">
-              <SearchBox />
+              <SearchTrigger variant="button" />
               <button
                 type="button"
                 aria-label="Notifications"
@@ -141,7 +146,8 @@ export async function Header() {
       </div>
 
       {/* Breaking ticker — visible on every viewport */}
-      <BreakingTicker items={breaking} />
-    </header>
+        <BreakingTicker items={breaking} />
+      </header>
+    </SearchProvider>
   );
 }
