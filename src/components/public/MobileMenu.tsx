@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Menu, Search, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Btn } from "@/components/ui/Btn";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { cn } from "@/lib/utils/cn";
@@ -25,7 +25,6 @@ interface Props {
  */
 export function MobileMenu({ nav, todayLabel }: Props) {
   const [open, setOpen] = useState(false);
-  const [q, setQ] = useState("");
   const pathname = usePathname();
   const router = useRouter();
   const { firebaseUser, profile, signOut } = useAuth();
@@ -58,14 +57,6 @@ export function MobileMenu({ nav, todayLabel }: Props) {
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [open]);
-
-  function submitSearch(e: React.FormEvent) {
-    e.preventDefault();
-    const term = q.trim();
-    if (term.length < 2) return;
-    setOpen(false);
-    router.push(`/search?q=${encodeURIComponent(term)}`);
-  }
 
   async function handleSignOut() {
     await signOut();
@@ -118,25 +109,6 @@ export function MobileMenu({ nav, todayLabel }: Props) {
               <div className="font-hand text-[12px] text-muted">
                 {todayLabel}
               </div>
-
-              <form onSubmit={submitSearch} className="block">
-                <label className="flex items-center gap-2 h-10 px-3 border-[1.5px] border-ink rounded-sm">
-                  <Search size={14} aria-hidden className="text-muted" />
-                  <input
-                    type="search"
-                    placeholder="Search news…"
-                    value={q}
-                    onChange={(e) => setQ(e.target.value)}
-                    className="bg-transparent flex-1 outline-none font-sans text-[14px] text-ink placeholder:text-muted min-w-0"
-                  />
-                  <button
-                    type="submit"
-                    className="font-hand text-[11px] text-accent"
-                  >
-                    Go →
-                  </button>
-                </label>
-              </form>
 
               {/* Account block */}
               <div className="border-[1.5px] border-ink rounded-sm bg-paper-2 p-3">
