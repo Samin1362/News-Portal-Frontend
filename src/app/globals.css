@@ -287,6 +287,14 @@ a:focus-visible {
   transition: width 0.1s linear;
 }
 
+/* Route-progress (top nav loader) — width is set inline by <RouteProgress/>;
+   the transition smooths the trickle + the snap to 100% on completion. */
+.route-progress-bar {
+  transition:
+    width 0.2s ease,
+    opacity 0.3s ease;
+}
+
 /* ----- Reduced-motion: honour the user's OS preference everywhere ----- */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -323,7 +331,8 @@ a:focus-visible {
   .row-hov:hover {
     transform: none !important;
   }
-  .reading-progress-bar {
+  .reading-progress-bar,
+  .route-progress-bar {
     transition: none !important;
   }
 }

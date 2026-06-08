@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import { Inter, Kalam, Source_Serif_4 } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/lib/providers/Providers";
+import { RouteProgress } from "@/components/ui/RouteProgress";
 import { WebVitals } from "@/components/analytics/WebVitals";
 
 // Cloudinary serves every article image; preconnecting shaves the TLS/DNS
@@ -83,6 +85,9 @@ export default function RootLayout({
         ) : null}
       </head>
       <body className="min-h-full flex flex-col bg-paper text-ink antialiased">
+        <Suspense fallback={null}>
+          <RouteProgress />
+        </Suspense>
         <WebVitals />
         <Providers>{children}</Providers>
       </body>
