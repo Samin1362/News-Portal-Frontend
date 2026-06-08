@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { SectionTitle } from "@/components/ui/SectionTitle";
+import { Reveal } from "@/components/ui/Reveal";
 import { ArticleCard } from "@/components/public/ArticleCard";
+import { FollowingStrip } from "@/components/public/FollowingStrip";
 import { SidebarAd } from "@/components/public/SidebarAd";
 import { listCategories, type CategoryDTO } from "@/lib/api/categories.api";
 import { getHomepage } from "@/lib/api/public.api";
@@ -117,9 +119,12 @@ export default async function HomePage() {
           )}
         </section>
 
+        {/* Following — personalised, renders only for readers with follows */}
+        <FollowingStrip />
+
         {/* Featured */}
         {featured.length > 0 ? (
-          <section>
+          <Reveal as="section">
             <SectionTitle>Featured</SectionTitle>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {featured.map((a) => (
@@ -131,11 +136,11 @@ export default async function HomePage() {
                 />
               ))}
             </div>
-          </section>
+          </Reveal>
         ) : null}
 
         {/* Latest */}
-        <section>
+        <Reveal as="section">
           <SectionTitle more={{ href: "/?view=latest", label: "More" }}>
             Latest
           </SectionTitle>
@@ -154,11 +159,11 @@ export default async function HomePage() {
               ))}
             </div>
           )}
-        </section>
+        </Reveal>
 
         {/* Per-category blocks */}
         {homepage.categories.map((block) => (
-          <section key={block.category.id}>
+          <Reveal as="section" key={block.category.id}>
             <SectionTitle
               more={{ href: `/category/${block.category.slug}` }}
             >
@@ -188,12 +193,12 @@ export default async function HomePage() {
                 </div>
               </div>
             )}
-          </section>
+          </Reveal>
         ))}
 
         {/* Video block */}
         {homepage.videos.length > 0 ? (
-          <section>
+          <Reveal as="section">
             <SectionTitle more={{ href: "/videos" }}>Watch</SectionTitle>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {homepage.videos.slice(0, 6).map((a) => (
@@ -206,12 +211,12 @@ export default async function HomePage() {
                 />
               ))}
             </div>
-          </section>
+          </Reveal>
         ) : null}
 
         {/* Gallery teaser */}
         {homepage.gallery.length > 0 ? (
-          <section>
+          <Reveal as="section">
             <SectionTitle more={{ href: "/gallery" }}>In pictures</SectionTitle>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {homepage.gallery.slice(0, 8).map((a) => (
@@ -224,12 +229,12 @@ export default async function HomePage() {
                 />
               ))}
             </div>
-          </section>
+          </Reveal>
         ) : null}
       </div>
 
       {/* Sticky sidebar */}
-      <aside className="space-y-6">
+      <aside className="space-y-6 lg:sticky lg:top-6 self-start">
         <SidebarAd />
         <div>
           <SectionTitle>Trending</SectionTitle>

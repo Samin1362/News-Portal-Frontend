@@ -7,6 +7,10 @@ import { AdSlot } from "@/components/ui/AdSlot";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { ArticleCard } from "@/components/public/ArticleCard";
 import { ShareButtons } from "@/components/public/ShareButtons";
+import { BookmarkButton } from "@/components/public/BookmarkButton";
+import { NewsletterSignup } from "@/components/public/NewsletterSignup";
+import { ReadingProgress } from "@/components/public/ReadingProgress";
+import { BackToTop } from "@/components/public/BackToTop";
 import { SidebarAd } from "@/components/public/SidebarAd";
 import { CommentsLazy } from "@/components/public/comments/CommentsLazy";
 import { getArticleBySlug } from "@/lib/api/public.api";
@@ -78,6 +82,8 @@ export default async function ArticlePage({ params }: RouteParams) {
 
   return (
     <article className="bg-paper">
+      <ReadingProgress />
+      <BackToTop />
       <div className="max-w-[1080px] mx-auto px-6 py-6">
         {/* Crumbs */}
         <nav
@@ -120,7 +126,7 @@ export default async function ArticlePage({ params }: RouteParams) {
             ) : null}
           </div>
 
-          <h1 className="serif text-[36px] md:text-[44px] font-extrabold tracking-tight leading-[1.05] mt-3">
+          <h1 className="serif text-display font-extrabold tracking-tight leading-[1.05] mt-3">
             {article.headline}
           </h1>
           {article.summary ? (
@@ -259,10 +265,14 @@ export default async function ArticlePage({ params }: RouteParams) {
               </div>
             ) : null}
 
-            {/* Share */}
-            <div className="mt-6 pt-4 border-t border-black/10">
+            {/* Share + save */}
+            <div className="mt-6 pt-4 border-t border-black/10 flex items-center justify-between flex-wrap gap-3">
               <ShareButtons url={shareUrl} title={article.headline} />
+              <BookmarkButton article={article} variant="inline" />
             </div>
+
+            {/* Newsletter call-to-action */}
+            <NewsletterSignup variant="inline" className="mt-6" />
 
             {/* JSON-LD */}
             {og?.structuredData ? (

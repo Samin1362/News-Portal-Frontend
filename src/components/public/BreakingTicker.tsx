@@ -26,7 +26,7 @@ export function BreakingTicker({ items = [] }: Props) {
       <span className="bg-accent text-paper font-hand font-bold text-[12px] tracking-widest px-3 py-1.5 shrink-0">
         BREAKING
       </span>
-      <div className="flex-1 overflow-hidden">
+      <div className="ticker-viewport flex-1 overflow-hidden">
         <div className="ticker-track font-hand text-[12px]">
           {looped.map((item, i) => (
             <span key={i} className="inline-flex items-center gap-2">

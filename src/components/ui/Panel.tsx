@@ -119,7 +119,7 @@ export function Panel({
         tabIndex={-1}
         className={cn(
           "relative w-full max-w-[560px] bg-paper border-[1.5px] border-ink rounded-md outline-none",
-          "shadow-[0_18px_50px_-12px_rgba(26,26,26,0.45)]",
+          "shadow-soft",
           "animate-[fadeIn_0.15s_ease-out]",
           className,
         )}
