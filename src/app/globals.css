@@ -21,6 +21,17 @@
 
   --radius-sm: 2px;
   --radius-md: 4px;
+
+  /* Soft floating shadow for overlays (search palette, notification panel,
+     menus) — distinct from the hard editorial "plate" hover shadow. */
+  --shadow-soft: 0 18px 50px -12px rgba(26, 26, 26, 0.45);
+
+  /* Fluid serif display scale (Phase 3 §2.1). clamp(min, preferred, max) so
+     large headlines shrink gracefully on mobile without a media-query ladder. */
+  --text-display: clamp(2.1rem, 1.35rem + 3.4vw, 3.25rem);
+  --text-h1: clamp(1.85rem, 1.4rem + 2vw, 2.6rem);
+  --text-h2: clamp(1.4rem, 1.15rem + 1vw, 1.85rem);
+  --text-h3: clamp(1.15rem, 1.02rem + 0.55vw, 1.4rem);
 }
 
 :root {
@@ -50,6 +61,15 @@ h1, h2, h3, h4, h5, h6, .serif {
 
 .font-hand {
   font-family: var(--font-hand);
+}
+
+/* Keyboard focus for links (Phase 3 a11y). Buttons + inputs carry their own
+   focus rings via the shared primitives; links were the gap. Mouse clicks
+   stay clean — `:focus-visible` only paints for keyboard/AT users. */
+a:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-accent) 60%, transparent);
+  outline-offset: 2px;
+  border-radius: 2px;
 }
 
 /* "uline" — the skewed editorial-red underline used behind section titles. */
@@ -147,6 +167,10 @@ h1, h2, h3, h4, h5, h6, .serif {
   white-space: nowrap;
   animation: ticker-scroll 32s linear infinite;
 }
+/* Pause the marquee while a reader hovers so headlines are clickable. */
+.ticker-viewport:hover .ticker-track {
+  animation-play-state: paused;
+}
 
 /* ----- Dashboard chrome animations (ported from editor portal) ----- */
 @keyframes dashIn {
@@ -224,4 +248,82 @@ h1, h2, h3, h4, h5, h6, .serif {
   background: var(--color-accent);
   vertical-align: middle;
   animation: livepulse 1.6s ease-in-out infinite;
+}
+
+/* ============================================================
+   Phase 3 — public-side motion layer (calm, opt-out-able).
+   ============================================================ */
+
+/* Reveal-on-scroll — paired with <Reveal/> (IntersectionObserver). The
+   element starts shifted + transparent and settles when `.is-visible` is
+   added. Used only for below-the-fold content, never critical above-fold. */
+.reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 0.5s ease-out,
+    transform 0.5s ease-out;
+  will-change: opacity, transform;
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Card image zoom — the article card wraps its image in `.group` and the
+   image carries `.card-img-zoom`; hover gently scales it inside the
+   overflow-hidden frame. */
+.card-img-zoom {
+  transition: transform 0.4s ease;
+}
+.group:hover .card-img-zoom {
+  transform: scale(1.05);
+}
+
+/* Reading-progress bar fill width is driven by an inline custom prop set by
+   <ReadingProgress/>; the transition keeps it smooth between scroll frames. */
+.reading-progress-bar {
+  width: var(--progress, 0%);
+  transition: width 0.1s linear;
+}
+
+/* ----- Reduced-motion: honour the user's OS preference everywhere ----- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  /* Marquee, stagger, live pulse: off, not just fast. */
+  .ticker-track {
+    animation: none !important;
+    transform: none !important;
+  }
+  .stagger > * {
+    opacity: 1 !important;
+    animation: none !important;
+  }
+  .live-dot::after {
+    animation: none !important;
+  }
+  /* Reveal + hover transforms: settle in place, never move. */
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .card-img-zoom,
+  .group:hover .card-img-zoom {
+    transition: none !important;
+    transform: none !important;
+  }
+  .card-hov:hover,
+  .row-hov:hover {
+    transform: none !important;
+  }
+  .reading-progress-bar {
+    transition: none !important;
+  }
 }

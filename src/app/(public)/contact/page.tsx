@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ContactForm } from "@/components/public/ContactForm";
 
 export const metadata: Metadata = {
   title: "Contact Deligo News",
@@ -60,6 +61,17 @@ export default function ContactPage() {
             </p>
           </a>
         ))}
+      </section>
+
+      <section className="mt-10">
+        <h2 className="serif text-[22px] font-extrabold tracking-tight mb-1">
+          Send us a message
+        </h2>
+        <p className="font-sans text-[13px] text-muted mb-4">
+          Prefer a form? Fill this in and we&apos;ll open a prefilled email to
+          the newsroom.
+        </p>
+        <ContactForm />
       </section>
 
       <section className="prose-deligo serif text-[16.5px] leading-[1.7] text-ink mt-10">

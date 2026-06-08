@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { ArticleCard } from "@/components/public/ArticleCard";
+import { FollowButton } from "@/components/public/FollowButton";
 import { SidebarAd } from "@/components/public/SidebarAd";
 import { Pagination } from "@/components/public/Pagination";
 import {
@@ -78,19 +79,29 @@ export default async function CategoryPage({
             }}
           />
         )}
-        <div className="px-5 py-4">
-          <h1 className="serif text-[28px] font-extrabold tracking-tight leading-none">
-            {payload.category.name}
-          </h1>
-          {payload.category.description ? (
-            <p className="mt-2 font-sans text-[14px] text-muted leading-relaxed">
-              {payload.category.description}
-            </p>
-          ) : (
-            <p className="mt-2 font-hand text-[12px] text-muted">
-              Latest stories in {payload.category.name}.
-            </p>
-          )}
+        <div className="px-5 py-4 flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <h1 className="serif text-[28px] font-extrabold tracking-tight leading-none">
+              {payload.category.name}
+            </h1>
+            {payload.category.description ? (
+              <p className="mt-2 font-sans text-[14px] text-muted leading-relaxed">
+                {payload.category.description}
+              </p>
+            ) : (
+              <p className="mt-2 font-hand text-[12px] text-muted">
+                Latest stories in {payload.category.name}.
+              </p>
+            )}
+          </div>
+          <FollowButton
+            category={{
+              id: payload.category.id,
+              slug: payload.category.slug,
+              name: payload.category.name,
+            }}
+            className="shrink-0"
+          />
         </div>
       </div>
 

@@ -1,12 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Bell } from "lucide-react";
 import { listCategories } from "@/lib/api/categories.api";
 import { getBreaking } from "@/lib/api/public.api";
 import { BreakingTicker } from "./BreakingTicker";
 import { HeaderUserMenu } from "./HeaderUserMenu";
 import { SearchProvider } from "./search/SearchProvider";
 import { SearchTrigger } from "./search/SearchTrigger";
+import { NotificationsProvider } from "./notifications/NotificationsProvider";
+import { NotificationBell } from "./notifications/NotificationBell";
 import { Logo } from "./Logo";
 import { MobileMenu } from "./MobileMenu";
 
@@ -56,6 +57,7 @@ export async function Header() {
 
   return (
     <SearchProvider>
+      <NotificationsProvider>
       <header className="border-b-[1.5px] border-ink bg-paper">
       {/* Top ad strip — hidden on mobile to free up vertical space.
           Slot is a fixed leaderboard ratio (728:90) so the image conforms
@@ -82,6 +84,7 @@ export async function Header() {
         </div>
         <div className="flex items-center justify-end gap-1.5">
           <SearchTrigger variant="icon" />
+          <NotificationBell variant="icon" />
           <HeaderUserMenu />
         </div>
       </div>
@@ -97,13 +100,7 @@ export async function Header() {
             <div className="flex-1" />
             <div className="flex items-center gap-3 pb-1">
               <SearchTrigger variant="button" />
-              <button
-                type="button"
-                aria-label="Notifications"
-                className="text-ink hover:text-accent transition-colors"
-              >
-                <Bell size={18} aria-hidden />
-              </button>
+              <NotificationBell variant="button" />
               <HeaderUserMenu />
             </div>
           </div>
@@ -148,6 +145,7 @@ export async function Header() {
       {/* Breaking ticker — visible on every viewport */}
         <BreakingTicker items={breaking} />
       </header>
+      </NotificationsProvider>
     </SearchProvider>
   );
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { NewsletterSignup } from "./NewsletterSignup";
 
 const FOOTER_NAV = [
   {
@@ -16,6 +17,7 @@ const FOOTER_NAV = [
     links: [
       { label: "Video", href: "/videos" },
       { label: "Photo gallery", href: "/gallery" },
+      { label: "Reading list", href: "/reading-list" },
       { label: "Search", href: "/search" },
     ],
   },
@@ -33,6 +35,13 @@ const FOOTER_NAV = [
 export function Footer() {
   return (
     <footer className="mt-auto border-t-[1.5px] border-ink bg-paper-2">
+      {/* Newsletter capture */}
+      <div className="border-b border-black/10">
+        <div className="max-w-[1280px] mx-auto px-6 py-6">
+          <NewsletterSignup variant="footer" className="md:max-w-[440px]" />
+        </div>
+      </div>
+
       <div className="max-w-[1280px] mx-auto px-6 py-8 grid grid-cols-2 md:grid-cols-4 gap-6">
         <div className="col-span-2 md:col-span-1">
           <Link href="/" className="flex items-baseline gap-1.5">

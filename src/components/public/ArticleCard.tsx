@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Eye, MessageSquare } from "lucide-react";
 import { Pill } from "@/components/ui/Pill";
+import { BookmarkButton } from "@/components/public/BookmarkButton";
 import type { ArticleCardDTO } from "@/lib/types/article";
 import type { CategoryDTO } from "@/lib/api/categories.api";
 import { compactCount, timeAgo } from "@/lib/utils/format";
@@ -14,6 +15,8 @@ interface Props {
   variant?: ArticleCardVariant;
   categoryById?: Map<string, CategoryDTO>;
   showSummary?: boolean;
+  /** Show the bookmark overlay (only on the image-led stack variants). */
+  showBookmark?: boolean;
   className?: string;
 }
 
@@ -41,6 +44,7 @@ export function ArticleCard({
   variant = "medium",
   categoryById,
   showSummary = true,
+  showBookmark = true,
   className,
 }: Props) {
   const category = categoryById?.get(article.categoryId);
@@ -50,7 +54,7 @@ export function ArticleCard({
     variant === "small" || variant === "mini" ? "side" : "stack";
 
   return (
-    <article className={cn("group", className)}>
+    <article className={cn("group relative", className)}>
       <Link href={href} className="block">
         <div
           className={cn(
@@ -80,7 +84,7 @@ export function ArticleCard({
                       ? "(max-width: 768px) 100vw, 33vw"
                       : "120px"
                 }
-                className="object-cover transition-transform group-hover:scale-[1.02]"
+                className="object-cover card-img-zoom"
               />
             </div>
           ) : layout === "stack" ? (
@@ -145,6 +149,16 @@ export function ArticleCard({
           </div>
         </div>
       </Link>
+
+      {/* Bookmark overlay — only on the image-led stack variants, kept out of
+          the wrapping <Link> so we don't nest interactive elements. */}
+      {showBookmark && layout === "stack" ? (
+        <BookmarkButton
+          article={article}
+          variant="overlay"
+          className="absolute top-2 right-2 z-10 shadow-soft"
+        />
+      ) : null}
     </article>
   );
 }
